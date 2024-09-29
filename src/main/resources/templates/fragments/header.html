@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block data-th-fragment="global_header">
+
+  <div class="headerBox">
+    <table class="headerTab">
+      <tr>
+        <td class="headerLeft">
+          <a data-th-href="@{/}">
+            <img class="headerFavicon" data-th-src="@{/img/favicon32.svg}" width="40" height="40" >
+          </a>
+        </td>
+        <td class="headerZwischen"></td>
+        <td class="headerMitte">
+          <h2><a class="headerMitteAhref" data-th-href="@{/}">Hiobspost</a></h2>
+        </td>
+        <td class="headerZwischen"></td>
+        <td class="headerRight">
+          <a class="headerHref" data-th-href="@{/logout}">Logout</a>
+          &#160;
+        </td>
+      </tr>
+    </table>
+  </div>
+
+</th:block>
+
+</html>

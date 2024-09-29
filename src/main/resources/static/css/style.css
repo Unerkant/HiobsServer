@@ -1,0 +1,111 @@
+/**
+ * Den 15.09.2024
+ * CSS-layout Paul Richter
+ */
+
+ html, body 	    { width: 100%; height: 100%; min-width: 500px; min-height: 600px; }
+
+ *, *::before, *::after { box-sizing: border-box; padding: 0; margin: 0; }
+ ::-webkit-scrollbar { display: none;}
+ a:link              { text-decoration: none; cursor: pointer; }
+ .boxSizing          { box-sizing: border-box; }
+ .finger             { cursor: pointer; }
+ .clear              { clear: both;}
+ img.blok			 { display: block; width: 100%; }
+
+     /* Allgemeine angaben */
+
+ /*  <style type="text/css"><!-- @import"/css/style.css"; --></style> */
+ /*  background-image: url("../img/giter.png"); box-shadow: 0px 0px 5px 0px rgba: 0,0,0,0.9; */
+ /*  Box auf 100% kommen box-sizing: border-box; */
+
+.flexCenter         { display: flex; justify-content: center; align-items: center; } /* item center */
+.flexRow            { display: flex; flex-direction: row; } /* width/auto oder auto/width */
+.flexWrap           { display: flex; flex-wrap: wrap; }
+.flexBetween        { display: flex; justify-content: space-between; } /* verteilt */
+.container          { min-height: calc(100vh - 0px); } /* height:100% - footer */
+.article            { /* border: 1px solid black; */ }
+.layout             { margin-left: auto; margin-right: auto; /* border: 1px solid red; */ }
+@media (min-width:576px) { .layout{ width: 560px; } }
+@media (min-width:768px) { .layout{ width: 750px; } }
+@media (min-width:992px) { .layout{ width: 950px; } }
+@media (min-width:1200px) { .layout{ width: 1170px; } }
+
+
+    /* fragments/header.html
+    ------------------------*/
+.headerBox          { background-color: #4169E1; border-bottom: #EAEAEA; }
+.headerTab          { width: 100%; padding: 10px;}
+.headerLeft         { width: 7.5em; }
+.headerZwischen     { width: 2.0em; }
+.headerMitte        { text-align: center;  }
+.headerMitteAhref   { color: white; letter-spacing: .2rem; padding: 10px 20px; }
+.headerRight        { width: 7.5em; text-align: right; color: white; }
+.headerFavicon      { border: 1px solid white; border-radius: 6px;}
+.headerHref         { border: 1px solid #EAEAEA; color: white; padding: 8px 15px; border-radius: 6px; }
+.headerHref:hover   { background-color: #EAEAEA; color: #4169E1; }
+
+    /* fragments/nav.html
+    ----------------------*/
+
+
+
+    /* fragments/footer
+    ---------------------------*/
+/* bei Admin nicht vorhanden */
+
+
+    /* errors.html
+     --------------*/
+
+
+
+
+    /* Beispiel */
+
+@media (min-width:576px) {  } /* von bootstrap */
+@media (min-width:768px) {  }
+@media (min-width:992px) {  }
+@media (min-width:1200px) {  }
+
+
+@media (max-width: 767px) { }   /* unbekant */
+@media (min-width: 768px) and(max-width: 991px) { }
+@media (min-width: 992px) and(max-width: 1199px) { }
+@media (min-width: 1200px) {  }
+
+.bildIcon           { background-image: url("../img/android20.svg"); background-repeat: no-repeat; display: inline-block;
+                      width: 20px; height: 20px; vertical-align: top; line-height: 100%; margin-right: 4px;
+                    }
+.shadow             { border: 1px solid rgba(29,92,123,0.3); box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, .10); }
+.navSticky          { position: sticky; top: 0;}
+.homeKastenAhref    { display: inline-block; padding-top: 20px; /* border: 1px solid red; */ }
+.homeKastenAhref:after  { display: block; content: ''; border-bottom: solid 3px #019fb6; transform: scaleX(0);
+                          transition: transform 250ms ease-in-out;
+                        }
+.homeKastenAhref:hover  { background-color: #FAFAFA; border: 1px solid #F2F2F2; border-radius: 6px; }
+.homeKastenAhref:hover:after    { transform: scaleX(1);}
+
+/* drop-kasten */
+.dropLi             { position: relative; }
+.dropBox            { /* display:none; */ position: absolute; right: 0; left: auto; width: 280px; background-color: white;
+                      padding: 15px; margin-top: 5px; border-radius: 6px;
+                      transition: transform ease-in-out 0.15s, opacity ease-out 0.15s; transform-origin: top right;
+                      transform: scaleX(0.15) scaleY(0.15); opacity: 0; pointer-events: none; z-index: 10;
+                    }
+.dropBox li         { float: left; display: inline; width: 120px; text-align: match-parent; text-wrap: nowrap; }
+.dropBox li a       { display: block; padding: 9px 10px; border-radius: 6px; overflow: hidden;}
+.dropBox li a:hover { background-color: #EAEAEA; }
+/* das class:open wird in function dropDown()/dropLanguage.js erstellt und ins classe:dropLi geschrieben, bei anclikcen */
+.open > .dropBox {
+    /* offnet das pop-up-fenster(language) */
+    /* display:block; */
+    transform: scaleX(1.0) scaleY(1.0);
+    opacity: 1;
+    pointer-events: all;
+}
+.open > a {
+    /* setzt unter den a:link blau streifen */
+    border-bottom: 3px solid #0088FF;
+    /*outline:0*/
+}

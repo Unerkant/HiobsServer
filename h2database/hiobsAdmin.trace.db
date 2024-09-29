@@ -1,0 +1,8 @@
+2024-09-28 18:02:11.012091+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLDataException: Datenumwandlungsfehler beim Umwandeln von "'' (DEVELOPER: ""ID"" BIGINT NOT NULL)"
+Data conversion error converting "'' (DEVELOPER: ""ID"" BIGINT NOT NULL)"; SQL statement:
+INSERT INTO "PUBLIC"."DEVELOPER"("ID","DATUM","EMAIL","OTHER","PASSWORT","PSEUDONYM","TELEFON","USERNAME","USERVORNAME")VALUES(?,?,?,?,?,?,?,?,?) [22018-232]
+2024-09-28 18:02:11.015018+02:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLDataException: Datenumwandlungsfehler beim Umwandeln von "'' (DEVELOPER: ""ID"" BIGINT NOT NULL)"
+Data conversion error converting "'' (DEVELOPER: ""ID"" BIGINT NOT NULL)"; SQL statement:
+INSERT INTO "PUBLIC"."DEVELOPER"("ID","DATUM","EMAIL","OTHER","PASSWORT","PSEUDONYM","TELEFON","USERNAME","USERVORNAME")VALUES(?,?,?,?,?,?,?,?,?) [22018-232]
