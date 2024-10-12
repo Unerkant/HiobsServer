@@ -17,8 +17,8 @@ public class DefaultController {
         /**
          * ACHTUNG: die default class ist nur eine hilfe-class für die SecurityConfig class
          * sie regelt welche Seite soll geöffnet werden nach Authorisierung(Role)...
-         * z.b.s mit ADMIN-Rechten kann auf alle Seite zugreifen
-         *       mit ROLE_ENGINEER nur die engineer.html nicht andere
+         * z.b.s mit ADMIN-Rechten wird die admin.html geöffnet
+         *       mit ROLE_ENGINEER wird die engineer.html geöffnet nicht andere
          *       mit ROLE_ENTWICKLER nur die entwickler.html Seite
          * .defaultSuccessUrl("/default", true) -> SecurityConfig/Zeile: 56
          *

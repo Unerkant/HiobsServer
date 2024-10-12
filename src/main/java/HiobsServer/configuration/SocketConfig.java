@@ -1,6 +1,5 @@
 package HiobsServer.configuration;
 
-
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -19,13 +18,13 @@ public class SocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config){
         config.enableSimpleBroker("/messages");
         config.setApplicationDestinationPrefixes("/app");
-        System.out.println("Web Socket Broker Zeile: 18  / " + config);
+        //System.out.println("Web Socket Broker Zeile: 18  / " + config);
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry){
         registry.addEndpoint("/register").setAllowedOriginPatterns("*").withSockJS();
-        System.out.println("Stomp EndPoint Registry Zeile: 26  / " + registry);
+        //System.out.println("Stomp EndPoint Registry Zeile: 26  / " + registry);
     }
 
 }

@@ -20,6 +20,7 @@ public class MessageController {
     @MessageMapping("/messages")
     public void messageReceiving(Message message) {
 
-        simpMessagingTemplate.convertAndSend("/messages/receive"+message.getRecipient(), message);
+        //System.out.println("Message Controller: " + message);
+        simpMessagingTemplate.convertAndSend("/messages/receive/" + message.getRecipient(), message);
     }
 }

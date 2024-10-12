@@ -20,7 +20,7 @@ public class WartungController {
          * z.b.s. http://localhost:8080/wartung?path=getParameter
          * output: getParameter
          */
-        System.out.println("Path(wartung): " + path);
+        //System.out.println("Path(wartung): " + path);
 
         return "wartung";
     }

@@ -35,13 +35,14 @@
     /* fragments/header.html
     ------------------------*/
 .headerBox          { background-color: #4169E1; border-bottom: #EAEAEA; }
-.headerTab          { width: 100%; padding: 10px;}
-.headerLeft         { width: 7.5em; }
-.headerZwischen     { width: 2.0em; }
+.headerTab          { width: 100%; padding: 10px; }
+.headerFavicon      { border: 1px solid white; border-radius: 6px;}
+.headerLeft         { width: 6.0em; }
+.headerZwischen     { width: 5.0em; }
 .headerMitte        { text-align: center;  }
 .headerMitteAhref   { color: white; letter-spacing: .2rem; padding: 10px 20px; }
-.headerRight        { width: 7.5em; text-align: right; color: white; }
-.headerFavicon      { border: 1px solid white; border-radius: 6px;}
+.headerRight        { width: 6.0em; text-align: right; color: white; }
+.headerClientOnline { color: white; }
 .headerHref         { border: 1px solid #EAEAEA; color: white; padding: 8px 15px; border-radius: 6px; }
 .headerHref:hover   { background-color: #EAEAEA; color: #4169E1; }
 

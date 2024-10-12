@@ -15,7 +15,9 @@
         <td class="headerMitte">
           <h2><a class="headerMitteAhref" data-th-href="@{/}">Hiobspost</a></h2>
         </td>
-        <td class="headerZwischen"></td>
+        <td class="headerZwischen">
+          <span class="headerClientOnline" data-th-text="${clientOnline}"></span>
+        </td>
         <td class="headerRight">
           <a class="headerHref" data-th-href="@{/logout}">Logout</a>
           &#160;

@@ -24,9 +24,9 @@ public class SecurityConfig {
     }
 
     private static final String[] AUTH_WHITELIST = {
+            "/register/**",
             "/h2-console/**",
-            "/resources/**",
-            "/register/**"
+            "/resources/**"
     };
 
 
