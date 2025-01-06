@@ -24,11 +24,7 @@ public class DefaultController {
          *
          * request.isUserInRole -> true/false
          */
-        if (request.isUserInRole("ROLE_ENGINEER")){
-
-            return "redirect:/engineer";
-
-        } else if (request.isUserInRole("ROLE_ENTWICKLER")) {
+        if (request.isUserInRole("ROLE_ENTWICKLER")) {
 
             //System.out.println("Verwaltung: " + request.isUserInRole("ROLE_VERWALTUNG"));
             return "redirect:/entwickler";
@@ -36,10 +32,6 @@ public class DefaultController {
         } else if (request.isUserInRole("ROLE_STATISTIK")) {
 
             return "redirect:/statistik";
-
-        } else if (request.isUserInRole("ROLE_WARTUNG")) {
-
-            return "redirect:/wartung";
 
         } else {
 

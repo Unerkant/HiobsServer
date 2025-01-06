@@ -2,6 +2,7 @@ package HiobsServer.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,6 +18,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * password codierung
+     * https://bcrypt-generator.com/
+     *
+     * @return
+     */
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
 
@@ -38,12 +45,11 @@ public class SecurityConfig {
                 //.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
                 .headers(headers -> headers.frameOptions(frameoption -> frameoption.disable()))
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers(HttpMethod.POST, "/**").permitAll()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers("/engineer/**").hasAnyRole("ENGINEER", "SUPERADMIN")
-                        .requestMatchers("/entwickler/**").hasAnyRole("ENTWICKLER", "SUPERADMIN")
-                        .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "SUPERADMIN")
-                        .requestMatchers("/wartung/**").hasAnyRole("WARTUNG", "SUPERADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN")
+                        .requestMatchers("/entwickler/**").hasAnyRole("ENTWICKLER", "ADMIN")
+                        .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "ADMIN")
                         .anyRequest()
                         .authenticated()
                 )

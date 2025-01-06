@@ -11,8 +11,19 @@
   <!-- :::::::::::::::::::::::::::::: Ausgabe Zone :::::::::::::::::::::::::::::::::: -->
 
   <article class="article">
-    <h3 align="center">Hallo Error bei Hiobs Server</h3>
-    <h2 data-th-text="${linkName}"></h2>
+    <div class="layout">
+      <div class="errorsBox">
+        <div class="leer3">&#160;</div>
+        <h1>ENTSCHULDIGUNG</h1>
+        <h3> &#123; <span class="darkred" data-th-text="${linkName}"></span> &#125;
+              &#160;die gewünschte Seite konnte nicht gefunden werden</h3>
+        <div class="leer1">&#160;</div>
+        <span>bitte nutzen Sie die Loginseite, neue anzumelden </span>
+        <a href="javascript:history.back()">Zur&#252;ck</a>
+        <div class="leer3">&#160;</div>
+        <img src="/img/what.png" width="256" height="256">
+      </div>
+    </div>
   </article>
 
   <!--<aside></aside>-->
