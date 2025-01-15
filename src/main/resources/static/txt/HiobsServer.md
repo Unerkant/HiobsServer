@@ -3,11 +3,19 @@
 
         das Project wurde am 15.09.2024 neu angelegt
         
-        Informationstechnologie betrachtet es im IT-Service-Management (ITSM)
-        Informations Technologie, IT-Projektmanager (ITPM)
+        HiobsServer(HS) ist das Herz von Project Hiobs Post...
+        auf dem HS Läuft Socket(spring boot), H2 Datenbank 'globalHiobs'und globalen Exception, & vieles mehr...
+        Alle User-Daten befinden sich auf dem HS H2-Database + Alle chats laufen über den HS-Socket und 
+        Alle Exceptionen sind gespeichert in Datenbank/exception und werden verwaltet auf der Admin Seite.
+        Admin Seite ist für unbefugten Gespäst nur mit den Namen(oder Code) kann sich einloggen, sperrung wird 
+        von den spring boot Security gesteuert, Rechte werden nur in Admin-Seite verwaltet & in Datenbank 
+        spalte 'role' eingetragen(ROLE_ADMIN....), freischalten von developer wird auch auf der Admin-Seite geben...
+        SicherheitsCode versendet mit den E-Mail für den Einloggen auf der Client Seite wird auch auf dem HS-Server
+        ausgefuhrt... von der Client-App die mail mit request zugesendet, hier sicherheitscode generiert & vesendet
+        ACHTUNG: wenn neue Seite wirt angelegt und soll mit Passwort geschützt, dann müssen sie die
+                Seite in SecurityConfig + DefaultController eintragen...
 
-        Der Developer (auch Softwareentwickler, Programmierer, Entwickler oder Software Engineer) ist ein IT-Spezialist, 
-        der sich auf Planung, Erstellung, Testen und Wartung von Softwareanwendungen und Systemen spezialisiert hat.
+        
 
 
     /* :::::::::::::::::::::::::::::::: ZUERST LESEN :::::::::::::::::::::::::::::::::::::::::::::: */
@@ -16,8 +24,24 @@
         + in DefaultController die Seite zun abruff festlegen
 
 
+
     /* ::::::::::::::::::::::::::::::: WAS SOLL NOCH GEMACHT WERDEN ::::::::::::::::::::::::::::::: */
+        Admin Seite
         1. 31.12.2024 -> MailSenden -> freischalten: //mailSender.send(mimeMessage); 
+        2. 12.01.2024 -> Admin Pannel die statuscode.json integrieren( da sind schon gemeldete Fehler )
+        3. 14.01.2024 -> Rechte-Verwaltungs Pannel aufbauen, spalte role Format: ROLE_ADMIN oder ROLE_BLABLA
+        4.
+
+        Support Seite
+        1. Pannel für die exception anzeigen von Datenbank/exception + erledigt Button mit Datum + Fehler Archivieren
+        2. 
+
+        Statistik Seite
+        1. wie-viele insgesammt user, wie-viele Online, wie-viele gelöscht, wie-viele gesperrt
+        2. wie-viele messagen sind versendet, 
+
+        Developer Seite
+        1. noch keine aufgabe
 
 
 
@@ -75,6 +99,12 @@
              Aktuell müssen alle Daten über Developer ins Mysql mit Hand eintragen!!!
 
     pom.xml ist nur eine dependency erforderlich: <artifactId>spring-boot-starter-security</artifactId>
+
+    ZUGRIFF RECHTE VON AU?EN:
+    von Außen sid erlaubt zugriffe von Client-App per:
+        a. POST -> z.b.s. wie Api-Verbindunge per Rquest, Login oder Exception
+        b. GET  -> z.b.s. wie Message von Andere Client-App, alle msg laufen über den HiobsServer/Socket
+        c. DELETE   -> noch nicht benutzt
  
     1. 
 
@@ -156,56 +186,58 @@
 
 
 
-    /* :::::::::::::::::::::::::::::::: MySql-Database (globalHiobs) :::::::::::::::::::::::::::::: */
+    /* :::::::::::::::::::::::::::::::: H2-Database (globalHiobs) :::::::::::::::::::::::::::::: */
 
-    1. pom.xml: 3 dependency, 
-        <!-- MySql + H2 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-			<version>3.3.5</version>
-		</dependency>
-		<!-- MySql connect (phpMYAdmin) von MAMP -->
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>9.1.0</version>
-		</dependency>
-		<!-- für @Entity: import jakarta.persistence.Entity; -->
+    1. pom.xml: 2 dependency erforderlich 
+        <!-- H2 Database -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<version>3.3.5</version>
 		</dependency>
+        <dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.3.232</version>
+		</dependency>
 
     2. application.properties
         # ==========================================================
-        # MySql = http://localhost:8888/phpMyAdmin5/
-        # ==========================================================
-        spring.datasource.url=jdbc:mysql://localhost:8889/globalHiobs
-        spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-        spring.datasource.username=root
-        spring.datasource.password=root
-
-        # ==========================================================
-        # = Hibernate MySql-Dialect
+        # = Connect H2 Database
         #===========================================================
-        spring.jpa.hibernate.ddl-auto=update
-        spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+        spring.datasource.url=jdbc:h2:file:./h2database/globalHiobs
+        #spring.datasource.url=jdbc:h2:file:~/h2database/bote
+        spring.datasource.driverClassName=org.h2.Driver
+        spring.datasource.username=sa
+        spring.datasource.password=
+
+        # =========================================================
+        # <!-- H2 Browser console: http://localhost:8076/h2-console -->
+        # =========================================================
+        spring.h2.console.enabled=true
+        spring.h2.console.path=/h2-console
+
 
     3. Tabelle: admin 
+        * ACHTUNG: Whitelabel Error Page, wenn in Datenbank 'Admin' die spalte role leer ist,
+        * wird die Security-exception ausgelöst & Whitelabel Error Page
+
             a. spalte datum: @JsonFormat(pattern = "dd.MM.yyyy HH:mm:ss") hatte Deutsche Datum-Ausgabe
                 Tag.Monat.Jahr Stnde:Minute:Secunde
             b. spalte role: ROLE_ADMIN oder ROLE_USER oder ROLE_DEVELOPER (für enwickler + statistik)
                 AdminDetails/public Collection<? extends GrantedAuthority> getAuthorities(){...} 
                 ACHTUNG: in GrantedAuthority wirt die ROLE_ angeschnitten und nur die endung benutzt( ADMIN )
-
     4.
     5.
-    6. Fazit: 
+    6. Fazit: spalte 'role' darf kein NULL sein oder Leer
 
 
     /* :::::::::::::::::::::::::::::::: Login + Logout :::::::::::::::::::::::::::::::::::::::::::: */
+
+    ACHTUNG: throw new UsernameNotFoundException("user not found!"); 
+    QUELLE:   ist von spring boot Security
+                    Anzeiger für Fehler in Login.html (über den input: Name)
+    BENUTZT: AdminDeteils.java Zeile: 42
 
     1. Login System ist Original von spring boot security, 
         in pom.xml ist nur eine dependency erforderlich: <artifactId>spring-boot-starter-security</artifactId>
@@ -247,9 +279,9 @@
                     ins Datenbank gespeichert
                 2. public void setInternFehler(Exception except){...}, hier werden nur Fehler von diesem Server 
                     behandelt (HiobsServer), weil kein request brauchen
-                3. die Alle Fehler werden nach StausCode gespeichert, mit den gleichen statusCode wird nur
+                3. die Alle Fehler werden nach StatusCode gespeichert, mit den gleichen statusCode wird nur
                     den count von dieser fehler erhöcht
-    Database: MySql: globalHiobs, Tabelle exception
+    Database: H2: globalHiobs, Tabelle exception
     model + service + repository : Exception
     REQUEST: alle Fehler von anderer Server werden mit den request an die @PostMapping("/exception") gesendet
     PARAMETER: als parameter wird den exception.toString() an HiobsServer zugesendet

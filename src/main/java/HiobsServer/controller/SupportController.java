@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 
 @Controller
-public class EntwicklerController {
+public class SupportController {
 
-    @GetMapping(value = {"/entwickler", "/entwickler{path}"})
+    @GetMapping(value = {"/support", "/support{path}"})
     public String getEntwickler(Model model, @RequestParam(required = false) String path) {
 
         //System.out.println("Entwickler Controller, Path: " + path);
 
-        return "entwickler";
+        return "support";
     }
 }

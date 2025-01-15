@@ -30,7 +30,7 @@ public class WebConfig {
             FILE_HTTP = "http://localhost:8080/";
         } else {
 
-            FILE_HTTP = "http://hiobspost.de/";
+            FILE_HTTP = "http://194.164.63.85:8080/";
         }
         //System.out.println("Config Init: " + myUtilities.getHost() +"/"+ myUtilities.getLocalhostIp());
     }

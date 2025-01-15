@@ -4,6 +4,7 @@ import HiobsServer.model.Admin;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +32,15 @@ public class AdminDetails implements UserDetails {
          *
          * return roles; [ROLE_ADMIN]
          * ACHTUNG: in GrantedAuthority wirt die ROLE_ angeschnitten und nur die endung benutzt( ADMIN )
+         *
+         * VORSICHT: wenn die spalte 'role' in datenbank leer ist dann, ohne if-abfrage geht
+         *          die Login-Seite auf error: Whitelabel Error Page
          */
+        if (admin.getRole().isBlank()) {
 
+            // Fehler in Login.html Anzeigen
+            throw new UsernameNotFoundException("Zugriff verweigert [10070]");
+        }
         List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
         roles.add(new SimpleGrantedAuthority(admin.getRole()));
         return roles;
@@ -67,4 +75,5 @@ public class AdminDetails implements UserDetails {
     public boolean isEnabled() {
         return true; //UserDetails.super.isEnabled();
     }
+
 }

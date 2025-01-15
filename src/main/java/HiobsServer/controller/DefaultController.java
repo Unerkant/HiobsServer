@@ -1,8 +1,11 @@
 package HiobsServer.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.io.IOException;
 
 /**
  * Den 25.09.2024
@@ -12,31 +15,40 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DefaultController {
 
     @GetMapping(value = "/default")
-    public String defaultLogin( HttpServletRequest request ) {
+    public void defaultLogin(HttpServletRequest request, HttpServletResponse servletResponse) throws IOException {
 
         /**
          * ACHTUNG: die default class ist nur eine hilfe-class für die SecurityConfig class
          * sie regelt welche Seite soll geöffnet werden nach Authorisierung(Role)...
          * z.b.s mit ADMIN-Rechten wird die admin.html geöffnet
          *       mit ROLE_ENGINEER wird die engineer.html geöffnet nicht andere
-         *       mit ROLE_ENTWICKLER nur die entwickler.html Seite
-         * .defaultSuccessUrl("/default", true) -> SecurityConfig/Zeile: 56
+         *       mit ROLE_ENTWICKLER nur die support.html Seite
+         * .defaultSuccessUrl("/default", true) → SecurityConfig/Zeile: 56
          *
-         * request.isUserInRole -> true/false
+         * request.isUserInRole → true/false
          */
-        if (request.isUserInRole("ROLE_ENTWICKLER")) {
+        if (request.isUserInRole("ROLE_ADMIN")) {
 
-            //System.out.println("Verwaltung: " + request.isUserInRole("ROLE_VERWALTUNG"));
-            return "redirect:/entwickler";
+            //System.out.println("Admin: " + request.isUserInRole("ROLE_ADMIN"));
+            //return "admin";
+            servletResponse.sendRedirect("admin");
+
+        } else if (request.isUserInRole("ROLE_DEVELOPER")) {
+
+            servletResponse.sendRedirect("developer");
+
+        } else if (request.isUserInRole("ROLE_SUPPORT")) {
+
+            servletResponse.sendRedirect("support");
 
         } else if (request.isUserInRole("ROLE_STATISTIK")) {
 
-            return "redirect:/statistik";
+            servletResponse.sendRedirect("statistik");
 
         } else {
-
             //System.out.println("Admin: " + request.isUserInRole("ROLE_ADMIN"));
-            return "redirect:/admin";
+            //return "redirect:/login";
+            servletResponse.sendRedirect("errors");
         }
     }
 }

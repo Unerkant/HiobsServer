@@ -1,0 +1,20 @@
+[
+  {
+    "code": 400,
+    "status": "Bad Request",
+    "quelle": "HiobsClient/MailController/@PostMapping(value = \"/login/maillogin\")",
+    "text": "den Fehler kommt von response = apiService.requestApi(loginLink, email), Zeile: 80"
+  },
+  {
+    "code": 90063,
+    "status": "SAVEPOINT_IS_INVALID_1",
+    "quelle": "HiobsServer/ApiLoginController/ @PostMapping(value = \"/loginSave\")",
+    "text" : "Neuer User speicherung in Datenbank fehlgeschlagen"
+  },
+  {
+    "code": 10070,
+    "status": "ROLE_NOT_FOUND_1",
+    "quelle": "HiobsServer/H2/Admin spalte:role [ROLE_ADMIN]",
+    "text": "rechte in spalte role fehlt, z.b.s. ROLE_ADMIN oder ROLE_[Seite.html]"
+  }
+]

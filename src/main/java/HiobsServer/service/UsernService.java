@@ -5,8 +5,6 @@ import HiobsServer.repository.UsernRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
 /**
  * Den 21.11.2024
  */
