@@ -29,23 +29,6 @@ public class UsernService {
 
 
     /**
-     * BENUTZT: von ApiSperreController
-     * <br><br>
-     * Sperre aufheben, wenn gesperrt werden....
-     * Parameter:   sperrdata -> null (soll zugesendet sein)
-     *              token -> user token
-     *  <br>
-     * @param sperrdata
-     * @param token
-     * @return
-     */
-    public Integer sperreUpdate(String sperrdata, String token) {
-
-        return usernRepository.updateSperre(sperrdata, token);
-    }
-
-
-    /**
      * BENUTZT: ApiLoginController
      * <br><br>
      * registrierte user mit diese e-mail suchen
@@ -67,22 +50,6 @@ public class UsernService {
     public String tokenSuchen(String token) {
 
         return usernRepository.findByToken(token).getToken();
-    }
-
-
-    /**
-     * BENUTZT: von ApiSperreController
-     * <br><br>
-     *
-     * result: null oder millis(1234567890)
-     *
-     * @param token
-     * @return
-     */
-    public Long sperrePrufen(String token) {
-
-        return usernRepository.findByToken(token).getSperrdatum();
-
     }
 
 }

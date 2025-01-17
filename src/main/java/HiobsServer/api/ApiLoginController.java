@@ -63,6 +63,7 @@ public class ApiLoginController {
                 +"<p>Ihr HiobsPost Team</p>";
         String subject = "HiobsPost Sicherheitstoken";
 
+        System.out.println("Mail: " +mailZugesendet);
         String output = mailSenden.sendEmail(mailZugesendet, text, subject);
 
         System.out.println("Zeile: 68, ApiLoginController -> "+ sicherheitsToken );
@@ -86,7 +87,7 @@ public class ApiLoginController {
 
             /**
              * Sicherheitcode wurde nicht versendet
-             * return: 400 (return nicht erforderlich)
+             * return: 402 (return nicht erforderlich)
              */
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("nosend");
         }
@@ -160,7 +161,6 @@ public class ApiLoginController {
             newUser.setPseudonym(pseu);
             newUser.setRole("");
             newUser.setSprache(sprache);
-            newUser.setSperrdatum(null);
             newUser.setTelefon("");
             newUser.setToken(token);
             newUser.setUsername("");

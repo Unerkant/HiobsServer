@@ -24,7 +24,6 @@ public class Usern {
     private String pseudonym;
     private String role;
     private String sprache;
-    private Long   sperrdatum;
     private String telefon;
     private String token;
     private String username;
@@ -35,7 +34,7 @@ public class Usern {
     }
 
     public Usern(Long id, String bild, String datum, String email, String other,
-                 String passwort, String pseudonym, String role, String sprache, Long sperrdatum,
+                 String passwort, String pseudonym, String role, String sprache,
                  String telefon, String token, String username, String uservorname ) {
         this.id         = id;
         this.bild       = bild;
@@ -46,7 +45,6 @@ public class Usern {
         this.pseudonym  = pseudonym;
         this.role       = role;
         this.sprache    = sprache;
-        this.sperrdatum = sperrdatum;
         this.telefon    = telefon;
         this.token      = token;
         this.username   = username;
@@ -81,9 +79,6 @@ public class Usern {
     public String getSprache() { return sprache; }
     public void setSprache(String sprache) { this.sprache = sprache; }
 
-    public Long getSperrdatum() { return sperrdatum; }
-    public void setSperrdatum(Long sperrdatum) { this.sperrdatum = sperrdatum; }
-
     public String getTelefon() { return telefon; }
     public void setTelefon(String telefon) { this.telefon = telefon; }
 
@@ -109,7 +104,6 @@ public class Usern {
                 ", pseudonym='" + pseudonym + '\'' +
                 ", role='" + role + '\'' +
                 ", sprache='" + sprache + '\'' +
-                ", sperrdatum=" + sperrdatum +
                 ", telefon='" + telefon + '\'' +
                 ", token='" + token + '\'' +
                 ", username='" + username + '\'' +

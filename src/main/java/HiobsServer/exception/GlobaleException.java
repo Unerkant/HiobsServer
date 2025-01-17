@@ -48,7 +48,7 @@ public class GlobaleException {
      *      HiobsClient/MailController/ApiService.requestApi', other='null', role='null'}
      *
      * 2. von mehreren speicherung den gleichen Fehler wird zuerst nach statusCode verglichen
-     * 3. bei gleichen statusCode wird nur count erhöht (nur für statistik)
+     * 3. bei gleichem statusCode wird nur count erhöht (nur für statistik)
      *
      * FAZIT: zugesendete daten können als Exception array gleich in Datenbank speichern
      *  1. prüfen in Datenbank, ob statusCode vorhanden ist

@@ -1,19 +1,41 @@
 
     /* :::::::::::::::::::::::::::::::: ANLEINTUG ZU PROJECT HIOBS SERVER ::::::::::::::::::::::::: */
 
-        das Project wurde am 15.09.2024 neu angelegt
+        das Project HiobsServer wurde am 15.09.2024 neu angelegt
         
-        HiobsServer(HS) ist das Herz von Project Hiobs Post...
-        auf dem HS Läuft Socket(spring boot), H2 Datenbank 'globalHiobs'und globalen Exception, & vieles mehr...
-        Alle User-Daten befinden sich auf dem HS H2-Database + Alle chats laufen über den HS-Socket und 
-        Alle Exceptionen sind gespeichert in Datenbank/exception und werden verwaltet auf der Admin Seite.
-        Admin Seite ist für unbefugten Gespäst nur mit den Namen(oder Code) kann sich einloggen, sperrung wird 
-        von den spring boot Security gesteuert, Rechte werden nur in Admin-Seite verwaltet & in Datenbank 
-        spalte 'role' eingetragen(ROLE_ADMIN....), freischalten von developer wird auch auf der Admin-Seite geben...
-        SicherheitsCode versendet mit den E-Mail für den Einloggen auf der Client Seite wird auch auf dem HS-Server
-        ausgefuhrt... von der Client-App die mail mit request zugesendet, hier sicherheitscode generiert & vesendet
-        ACHTUNG: wenn neue Seite wirt angelegt und soll mit Passwort geschützt, dann müssen sie die
-                Seite in SecurityConfig + DefaultController eintragen...
+    Project HiobsServer ablauf 
+
+    1. HiobsServer
+        HiobsServer ist das Herz von hiobspost Project, Admin mit Zugriffverwaltung mit Rechtevergabe,
+        Message Socket, die alle msg von Client-App laufen über den HiobsServer, Einloggen oder neue
+        User Registriren, Sicherchetscode per E-Mail versenden und Exception von anderer Client-App
+
+        A.  Admin Rechtevergabe: SecurityConfig.java + DefaultController
+            a. admin.html           (Rechte: ROLE_ADMIN) -> text-Format zum eintragung ins spalte 'role'
+            b. developer.html       (Rechte: ROLE_DEVELOPER)
+            c. entwickler.html      (Rechte: ROLE_ENTWICKLER)
+            d. statistik.html       (Rechte: ROLE_STATISTIK)
+        
+        B. Message Socket von spring boot: SocketConfig.java + SocketEventListener
+            a. register soll in SecurityConfig frei gegeben sein, weil zugriff erfolgt von Außen
+
+        C. Einloggen/Registrieren von Client-App: ApiLoginController.java
+            a. api verzeichnis soll in SecurityConfig frei gegeben sein, weil zugriff erfolgt von Außen
+
+        D. Sicherheitscode versand: utilitis/MailSenden
+            a. bei jeder einloggen/registrieren wir per E-Mail eine Sicherheitscode versendet
+
+        E. Globale Exception: exception/GlobaleException
+            a. Alle störungen oder Fehler von Client-App, wenn erfast sind, werden per Request an den 
+                GlobalException gesendet, wenn gleiche Fehler wird nochmal gesendet wird nur count erhöcht,
+                geprüft wird nach StatusCode
+                
+        G. Sperre von User: ApiSperreController.java 
+            a. der ablauf von sperre ist bei 'User Sperre' Detailiert beschrieben
+
+
+
+    2. 
 
         
 
@@ -30,7 +52,10 @@
         1. 31.12.2024 -> MailSenden -> freischalten: //mailSender.send(mimeMessage); 
         2. 12.01.2024 -> Admin Pannel die statuscode.json integrieren( da sind schon gemeldete Fehler )
         3. 14.01.2024 -> Rechte-Verwaltungs Pannel aufbauen, spalte role Format: ROLE_ADMIN oder ROLE_BLABLA
-        4.
+        4. 15.01.2024 -> Sperre, soll einer schudelerService um jeder Tag auf sperre Prüfen und Automatisch
+                          zu angemeldeten  Client-App die sperrZeit in Datanbnk/Auth zu aktualisieren
+        5. 17.01.2024 ->  sollte noch eine schudelerService geben zu prüfen, 'zuletzt Online'... nach 1 Jahr Löschen
+        6.
 
         Support Seite
         1. Pannel für die exception anzeigen von Datenbank/exception + erledigt Button mit Datum + Fehler Archivieren
@@ -63,26 +88,6 @@
         Border:             border-bottom: #EAEAEA; (header/bottom)
 
     Bilder: 
-
-    /* :::::::::::::::::::::::::::::::: Project Hiobs ablauf :::::::::::::::::::::::::::::::::::::: */
-
-    1. HiobsServer
-        HiobsServer ist das Herz von hiobspost Project, auf HiobsServer läuft der Message Socket, alle messages laufen
-        über den socket, das ist auch Admin Seite mit 5 verschidenen Teile(zuerst) mit eingenen Rechten
-            a. admin.html           (Rechte: ROLE_ADMIN)
-            b. entwickler.html      (Rechte: ROLE_ENTWICKLER)
-            c. statistik.html       (Rechte: ROLE_STATISTIK)
-            d. kann erweitert sein
-        
-        A. Einloggen System ist von spring boot Security, die rechte werden auch von security geregelt,
-            einstellung in SecurityConfig.java möglich
-        B. die Developer Daten werden in einem H2 Datanbank gespeichert (Database: hiobsAdmin.mv.db)
-        C. Rechte sind in Table: ROLE festgelegt
-        D. Rechte an Developer zugewiesen sind in H2 Table: developer_role
-
-
-    2. HiobsClient
-
 
 
     /* :::::::::::::::::::::::::::::::: socket(spring boot) ::::::::::::::::::::::::::::::::::::::: */
@@ -303,8 +308,35 @@
             Fehlder von HiobsServer werden in die methode: public void setInternFehler(Exception except) gesendet
 
 
-    /* :::::::::::::::::::::::::::::::: Globale Exception ::::::::::::::::::::::::::::::::::::::::: */
-    /* :::::::::::::::::::::::::::::::: Globale Exception ::::::::::::::::::::::::::::::::::::::::: */
+    /* :::::::::::::::::::::::::::::::: User Sperre ::::::::::::::::::::::::::::::::::::::::::::::: */
+
+        USER SPERRE ABLAUF
+            a. z.b.s wenn einen User wird für 3 Monate Gesperrt
+            b. auf der Admin Seite soll Funktion geben zum SperrZeit ins Datenbank einzutragen
+            c. ABLAUF: die SperrZeit in Millisecunden soll von Admin ins globalen Datenbank Tabelle: Sperre
+                ( soll noch gemacht) eingetragen sein, gleich sollte Automatisch die sperrZeit an die
+                Client-App weitergeleitet, weil Anmelde-Daten liegen auf dem Client-App in der Datenbank
+                Tabelle: Auth...
+            d. AUF DEN CLIENT-APP: ablauf -> bei starten oder Aktualisieren die index.html Seite wird immer
+                geprüft auf die sperre, wenn sperrZeit(in Millisecunden) in Tabelle Auth vorhanden ist wird
+                die ganze Seite index.html ausgeblendet und den sperre.html angezeigt mit den rücklaufzeit
+            e.  der SperreController wird die sperrZeit von Tabelle: Auth, in Millisecunden, auslesen und an die 
+                sperre.html weitergesendet(model) gesendet und in einem input type:hidden gespeichert, 
+                gleichzeitlich wirt den javascript  freigegeben: 
+                <script data-th-if="${sperrJS}" data-th-src="@{/js/sperreCountdown.js}"></script>
+            f.  die javascript erledigt die ganze arbeit, ein Zähler läuft rückwerz, bei ablauf die sperrzeit
+                wird den fetch aktiviert und einen request an sperreController gesendet, in der function
+                 @DeleteMapping("/sperreDelete") ... wird dann in Datenbanken eine Update durchgeführt und die
+                 sperrzeit auf null gesetzt, die index.html sollte Automatisch neu gestartet sein
+            g.  Datenbank: wo sollte update ausgeführt
+                    HiobsServer/H2 Database: globalHiobs, Tabelle sperre spalte sperrdatum
+                    HiobsClient/H2 Database: hiobsClient, Tabelle Auth splalte sperrdatum
+
+
+    /* :::::::::::::::::::::::::::::::: Weitere Beschreibungen :::::::::::::::::::::::::::::::::::: */
+    /* :::::::::::::::::::::::::::::::: Weitere Beschreibungen :::::::::::::::::::::::::::::::::::: */
+    /* :::::::::::::::::::::::::::::::: Weitere Beschreibungen :::::::::::::::::::::::::::::::::::: */
+    /* :::::::::::::::::::::::::::::::: Weitere Beschreibungen :::::::::::::::::::::::::::::::::::: */
 
 
     

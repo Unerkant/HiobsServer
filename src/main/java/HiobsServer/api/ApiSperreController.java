@@ -1,6 +1,6 @@
 package HiobsServer.api;
 
-import HiobsServer.service.UsernService;
+import HiobsServer.service.SperreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class ApiSperreController {
 
     @Autowired
-    private UsernService usernService;
+    private SperreService sperreService;
 
     /**
-     * AUFGABE: in Datenbank USERN die spalte 'sperrdatum' auf null setzen, nach Ablauf die Sperre
+     * AUFGABE: in die Tabelle Sperre, spalte 'sperrdatum' auf null setzen, nach Ablauf die Sperre
      * <br><br>
      * RESULT: 1 → wenn spalte 'sperrdatum' geleert wird
      *         0 → wenn kein token gefunden wird
@@ -33,10 +33,12 @@ public class ApiSperreController {
     @PostMapping(value = "/sperreDeleteApi")
     public ResponseEntity<Integer> apiSperre(@RequestBody String token) {
 
-        Integer result = usernService.sperreUpdate(null, token);
+        // SperrZeit aus der spalte 'sperrdatum' löschen
+        Integer result = sperreService.sperreUpdate(null, token);
 
         // response an HiobsClient/SperreController/@DeleteMapping
         return ResponseEntity.status(HttpStatus.OK).body(result);
+
     }
 
 }
