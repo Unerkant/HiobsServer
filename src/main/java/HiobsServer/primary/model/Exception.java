@@ -1,4 +1,4 @@
-package HiobsServer.model;
+package HiobsServer.primary.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
@@ -14,12 +14,12 @@ public class Exception {
 
     @Id
     @GeneratedValue
-    private Long id;
+    private long id;
     private int count;
     @JsonFormat(pattern = "dd.MM.yyyy HH:mm:ss")
     private String datum;
-    private String errip;
     private int errcode;
+    private String errip;
     private String errquelle;
     private String errtext;
     private String other;
@@ -27,13 +27,13 @@ public class Exception {
 
     public Exception(){}
 
-    public Exception(Long id, int count, String datum, String errip, int errcode, String errquelle,
+    public Exception(Long id, int count, String datum, int errcode, String errip, String errquelle,
                      String errtext, String other, String role) {
         this.id         = id;
         this.count      = count;
         this.datum      = datum;
-        this.errip      = errip;
         this.errcode    = errcode;
+        this.errip      = errip;
         this.errquelle  = errquelle;
         this.errtext    = errtext;
         this.other      = other;
@@ -49,11 +49,11 @@ public class Exception {
     public String getDatum() { return datum; }
     public void setDatum(String datum) { this.datum = datum; }
 
-    public String getErrip() { return errip; }
-    public void setErrip(String errip) { this.errip = errip; }
-
     public int getErrcode() { return errcode; }
     public void setErrcode(int errcode) { this.errcode = errcode; }
+
+    public String getErrip() { return errip; }
+    public void setErrip(String errip) { this.errip = errip; }
 
     public String getErrquelle() { return errquelle; }
     public void setErrquelle(String errquelle) { this.errquelle = errquelle; }
@@ -74,8 +74,8 @@ public class Exception {
                 "  id=" + id +
                 "  count=" + count +
                 ", datum='" + datum + '\'' +
-                ", errip='" + errip + '\'' +
                 ", errcode=" + errcode +
+                ", errip='" + errip + '\'' +
                 ", errquelle='" + errquelle + '\'' +
                 ", errtext='" + errtext + '\'' +
                 ", other='" + other + '\'' +

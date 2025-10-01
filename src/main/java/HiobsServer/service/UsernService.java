@@ -1,7 +1,7 @@
 package HiobsServer.service;
 
-import HiobsServer.model.Usern;
-import HiobsServer.repository.UsernRepository;
+import HiobsServer.primary.model.Usern;
+import HiobsServer.primary.repository.UsernRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

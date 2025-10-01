@@ -1,11 +1,10 @@
 package HiobsServer.service;
 
-import HiobsServer.model.Admin;
+import HiobsServer.admin.model.Admin;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,9 +36,8 @@ public class AdminDetails implements UserDetails {
          *          die Login-Seite auf error: Whitelabel Error Page
          */
         if (admin.getRole().isBlank()) {
-
             // Fehler in Login.html Anzeigen
-            throw new UsernameNotFoundException("Zugriff verweigert [10070]");
+            throw new UsernameNotFoundException("Zugriff verweigert [90070]");
         }
         List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
         roles.add(new SimpleGrantedAuthority(admin.getRole()));
@@ -56,24 +54,29 @@ public class AdminDetails implements UserDetails {
         return admin.getUsername();
     }
 
+    /* Konto nicht abgelaufen */
     @Override
     public boolean isAccountNonExpired() {
         return true;  //UserDetails.super.isAccountNonExpired();
     }
 
+    /* Konto nicht gesperrt*/
     @Override
     public boolean isAccountNonLocked() {
-        return true;  //UserDetails.super.isAccountNonLocked();
+        return true;
+        //UserDetails.super.isAccountNonLocked();
     }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; //UserDetails.super.isCredentialsNonExpired();
-    }
-
+    /* Konto ist Aktiviert */
     @Override
     public boolean isEnabled() {
         return true; //UserDetails.super.isEnabled();
+    }
+
+    /* Konto noch angemeldet */
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; //UserDetails.super.isCredentialsNonExpired();
     }
 
 }

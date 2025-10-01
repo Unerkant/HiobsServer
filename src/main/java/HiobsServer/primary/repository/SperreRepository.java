@@ -1,6 +1,6 @@
-package HiobsServer.repository;
+package HiobsServer.primary.repository;
 
-import HiobsServer.model.Sperre;
+import HiobsServer.primary.model.Sperre;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

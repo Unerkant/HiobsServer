@@ -1,6 +1,6 @@
 package HiobsServer.utilities;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.net.*;
 import java.text.ParseException;
@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Den 14.12.2024
  */
 
-@Service
+@Component
 public class MyUtilities {
 
 
@@ -21,7 +21,6 @@ public class MyUtilities {
      *   aktuelle datum in DE-Format
      *   ============================================================
      *   1. Deutsches Format, für die Allgemeine anzeige
-     *   2. US-Format (in Datenbank speichern)
      *
      */
     public String deDatum(){
@@ -45,33 +44,70 @@ public class MyUtilities {
     }
 
 
-
     /**
-     * Benutzt: Zurzeit nicht
+     * Aktuelle Tag + Monat + Jahr (Deutsche Format)
      * ==============================================================
-     * soll von CountEntryService
-     *
      * @return
      */
-    public String aktuellTag(){
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy");
-        Date tag = new Date();
-        return format.format(tag);
+    public String jahrTag() {
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        Date de = new Date();
+        return format.format(de);
     }
 
+
+    /**
+     * Aktuelles Tages Zeit
+     * ==============================================================
+     * @return
+     */
+    public String tagZeit() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        Date de = new Date();
+        return format.format(de);
+    }
 
 
     /**
      * Benutzt: nur zur Registrierung
      * ==============================================================
      * IdentifikationToken ist einen 14-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     * Tag + Monat + Jahr + Stunden + Minuten + Sekunden
+     *  *Deutsche format: Tag + Monat + Jahr + Stunden + Minuten + Sekunden
      * @return
      */
     public String IdentifikationToken(){
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyyHHmmss");
         Date token = new Date();
         return format.format(token);
+    }
+
+
+    /**
+     * Benutzt: nur für Message Token
+     * ==============================================================
+     * messageToken ist einen 14-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *   *USA format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden
+     * @return
+     */
+    public String messageToken() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date token = new Date();
+        return format.format(token);
+    }
+
+
+    /**
+     * Benutzt: nur für Gespeichertes Token
+     * ==============================================================
+     *  gespeichertes Token ist einen 12-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *   *USA format: Jahr + Monat + Tag + Stunden + Minute + Sekunde(einstellig)
+     *
+     * @return
+     */
+    public String otherToken(){
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+        Date tag = new Date();
+        return format.format(tag);
     }
 
 
@@ -125,81 +161,5 @@ public class MyUtilities {
         long millis = date.getTime();
         return millis;
     }
-
-
-    /**
-     * Landes Code
-     * ==============================================================
-     * <br><br>
-     * return:  ~de
-     *
-     * @return
-     */
-    public String getLanguage() {
-        Locale locale =  Locale.getDefault();
-        if (locale == null){
-            locale = new Locale(System.getProperty("user.language"), System.getProperty("user.country"));
-        }
-        return locale.getLanguage();
-    }
-
-
-    /**
-     * HTTP Localhost Name
-     * <br><br>
-     *
-     * return: ~localhost
-     *
-     * @return
-     */
-    public String getHost() {
-
-        try {
-            return InetAddress.getLocalHost().getCanonicalHostName();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    /**
-     * Localhost Ip-Adresse (127.0.0.1)
-     * <br><br>
-     *
-     * return:  127.0.0.1
-     *
-     * @return  als String
-     */
-    public String getLocalhostIp() {
-
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    /**
-     * Deine TCP/IP Gerät-Ip-Adresse (Laptop oder ipad)
-     * <br><br>
-     *
-     * return: 192.168.0.246
-     *
-     * @return
-     */
-    public String getNetzwerkIp() {
-
-        String ip = "127.0.0.1";
-        try(final DatagramSocket socket = new DatagramSocket()) {
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            ip = socket.getLocalAddress().getHostAddress();
-        } catch (SocketException | UnknownHostException ex) {
-            System.out.println(ex);
-        }
-
-        return ip;
-    }
-
 
 }

@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 /**
  * Den 15.09.2024
@@ -18,19 +18,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * password codierung
-     * https://bcrypt-generator.com/
-     *
-     * @return
-     */
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
-
-        return new BCryptPasswordEncoder();
-    }
-
     private static final String[] AUTH_WHITELIST = {
+            "/profilbild/**",
             "/register/**",
             "/h2-console/**",
             "/resources/**"
@@ -46,30 +35,56 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frameoption -> frameoption.disable()))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .requestMatchers("/","/admin/**").hasAnyRole("ADMIN")
-                        .requestMatchers("/developer/**").hasAnyRole("DEVELOPER","ADMIN")
-                        .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
-                        .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/register/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
+                        .requestMatchers("/developer/**").hasAnyRole("DEVELOPER","ADMIN")
+                        .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
+                        .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "ADMIN")
+                        .requestMatchers("/","/admin/**").hasAnyRole("ADMIN")
                         .anyRequest()
                         .authenticated()
                 )
                 .formLogin( form -> form
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/default", true)  /* extra default class */
-                        .failureUrl("/errors")
+                        .defaultSuccessUrl("/default", true)   /* extra default class */
+                        //.failureHandler(authenticationFailureHandler())                /* falsch einloggen Daten */
+                        .failureUrl("/error")
                         .permitAll()
                 )
                 .logout( logout -> logout
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .deleteCookies("JSESSIONID")
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                         .permitAll()
                 );
         return http.build();
 
+    }
+
+    /**
+     * ACHTUNG: am 5.05.2025 ausgesetzt + configuration/AdminAuthenticationFailureHandler() + hier Zeile: 52
+     *
+     * Falsche einloggen Daten
+     *
+     * QUELLE: configuration: AdminAuthenticationFailureHandler
+     * @return
+     */
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return new AdminFailureHandler();
+    }
+
+    /**
+     * password codierung
+     * https://bcrypt-generator.com/
+     *
+     * @return
+     */
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder(){
+
+        return new BCryptPasswordEncoder();
     }
 
 }

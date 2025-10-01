@@ -1,6 +1,6 @@
 package HiobsServer.service;
 
-import HiobsServer.repository.SperreRepository;
+import HiobsServer.primary.repository.SperreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

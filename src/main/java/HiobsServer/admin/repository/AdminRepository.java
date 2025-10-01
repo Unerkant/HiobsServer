@@ -1,9 +1,8 @@
-package HiobsServer.repository;
+package HiobsServer.admin.repository;
 
-import HiobsServer.model.Admin;
+import HiobsServer.admin.model.Admin;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 
 /**
@@ -14,5 +13,5 @@ import java.util.Optional;
 public interface AdminRepository extends CrudRepository<Admin, Integer> {
 
     // suchen nach Name oder E-Mail
-    Optional<Admin> findByUsernameOrEmail(String username, String email);
+    Optional<Admin> findByUsernameOrEmailOrTelefon(String username, String email, String telefon);
 }

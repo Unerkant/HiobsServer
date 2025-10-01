@@ -1,12 +1,14 @@
 package HiobsServer.api;
 
 import HiobsServer.exception.GlobaleException;
-import HiobsServer.model.Exception;
-import HiobsServer.model.Usern;
+import HiobsServer.primary.model.Exception;
+import HiobsServer.primary.model.Usern;
+import HiobsServer.primary.model.Friends;
+import HiobsServer.service.FriendsService;
 import HiobsServer.service.UsernService;
+import HiobsServer.utilities.GeoLocation;
 import HiobsServer.utilities.MailSenden;
 import HiobsServer.utilities.MyUtilities;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +24,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class ApiLoginController {
 
     @Autowired
+    private ApiLetzteLoginController apiLetzteLoginController;
+    @Autowired
     private MyUtilities myUtilities;
+    @Autowired
+    private GeoLocation geoLocation;
     @Autowired
     private MailSenden mailSenden;
     @Autowired
     private UsernService usernService;
+    @Autowired
+    private FriendsService friendsService;
     @Autowired
     private GlobaleException globaleException;
 
@@ -63,25 +71,26 @@ public class ApiLoginController {
                 +"<p>Ihr HiobsPost Team</p>";
         String subject = "HiobsPost Sicherheitstoken";
 
-        System.out.println("Mail: " +mailZugesendet);
+
         String output = mailSenden.sendEmail(mailZugesendet, text, subject);
 
+        System.out.println("Mail: " +mailZugesendet);
         System.out.println("Zeile: 68, ApiLoginController -> "+ sicherheitsToken );
 
         if (output.equals("versendet")) {
 
             /**
-             * Sicherungscode versendet
+             * Sicherungscode erfolgreich versendet
              * <br><br>
              * return an HiobsClient/MailController ->  @PostMapping(value = "/login/mail")
              * return: 200 (statusCode wird erwartet)
+             * Daten in Datenbank suchen, ob User schon registriert ist oder neuer
              * return: 'gefunden' + 'nichtgefunden', sind erforderlich
              *
              * ACHTUNG: kein NULL response, geht auf errors
              */
             Usern datenSuchen = usernService.userSuchen(mailZugesendet);
             String mailSuchen = datenSuchen == null ? "nichtgefunden" : "gefunden";
-
             return ResponseEntity.status(HttpStatus.OK).body(mailSuchen);
         } else {
 
@@ -113,16 +122,23 @@ public class ApiLoginController {
     @PostMapping(value = "/loginSave")
     public ResponseEntity<Usern> apiSave(@RequestBody Usern neuDaten) {
 
-        Usern newUser = new Usern();
-
         // Daten vorbereiten
         String mail     = neuDaten.getEmail();
         String fund     = neuDaten.getRole().trim();
         int userCode    = Integer.parseInt(neuDaten.getOther().trim());
         String pseu     = mail.substring(0, mail.length() - mail.length() + 2);
         String datum    = myUtilities.deDatum();
-        String sprache  = myUtilities.getLanguage();
-        String token    = myUtilities.IdentifikationToken();
+        String sprache  = geoLocation.clientCity("countryCode");
+        String meintoken                = myUtilities.IdentifikationToken();
+        String hiobsMsgToken            = myUtilities.messageToken();
+        String gespeichertesMsgToken    = myUtilities.otherToken();
+        Friends newHiobs = new Friends();
+        Friends newGespeichertes = new Friends();
+
+        // User-Daten von Datenbank holen, wenn vorhanden sind?
+        Usern newUser = new Usern();
+        Usern altUser = usernService.userSuchen(mail);
+
 
 
         /**
@@ -134,7 +150,9 @@ public class ApiLoginController {
         if (sicherheitsToken != userCode) {
             newUser.setEmail(mail);
             newUser.setOther("falschecode");
+            newUser.setPseudonym(pseu);
             newUser.setRole(fund);
+            newUser.setToken(meintoken);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(newUser);
         }
 
@@ -143,7 +161,6 @@ public class ApiLoginController {
         /**
          * Neuer User Registrieren oder alte User-Daten abrufen
          */
-        Usern altUser = usernService.userSuchen(mail);
         if (altUser != null) {
 
             //User vorhanden, nur Daten abrufen
@@ -152,7 +169,16 @@ public class ApiLoginController {
 
         } else {
 
-            //User nicht vorhanden, neue anlegen
+            /**
+             * User nicht vorhanden, neue anlegen
+             *
+             * ACHTUNG: bei neu Registrierung werde gleich message token für hiobs + gespeichertes angelegt
+             * die 2 chats werden in Datenbank als Freunde angelegt mit engine message token
+             * der speicherort von meinen Freunden: secondary/model/Friends
+             *
+             * BEMERKUNG: die 2 chats, Hiobs Post & Gespeichertes sind als bestandteil voll integriert
+             * und können nicht gelöscht werden
+             */
             newUser.setBild("");
             newUser.setDatum(datum);
             newUser.setEmail(mail);
@@ -162,15 +188,49 @@ public class ApiLoginController {
             newUser.setRole("");
             newUser.setSprache(sprache);
             newUser.setTelefon("");
-            newUser.setToken(token);
+            newUser.setToken(meintoken);
             newUser.setUsername("");
             newUser.setUservorname("");
 
             Usern saveUser = usernService.userSave(newUser);
 
+            // Hiobs Post als Freund anlegen
+            newHiobs.setDatum(datum);
+            newHiobs.setFriendsbild("hiobspost");
+            newHiobs.setFriendsmail("");
+            newHiobs.setFriendsname("Hiobs");
+            newHiobs.setFriendspseudonym("HP");
+            newHiobs.setFriendstelefon("");
+            newHiobs.setFriendstoken("");
+            newHiobs.setFriendsvorname("Post");
+            newHiobs.setGespeichertestoken("");
+            newHiobs.setHiobstoken("");
+            newHiobs.setMeinentoken(meintoken);
+            newHiobs.setMessagetoken(hiobsMsgToken);
+            newHiobs.setRole("Servicemeldungen");
+
+            Friends saveHiobs = friendsService.freundSave(newHiobs);
+
+            // Gespeichertes als Freund anlegen
+            newGespeichertes.setDatum(datum);
+            newGespeichertes.setFriendsbild("gespeichertes");
+            newGespeichertes.setFriendsmail("");
+            newGespeichertes.setFriendsname("Gespeichertes");
+            newGespeichertes.setFriendspseudonym("GS");
+            newGespeichertes.setFriendstelefon("");
+            newGespeichertes.setFriendstoken("");
+            newGespeichertes.setFriendsvorname("");
+            newGespeichertes.setGespeichertestoken("");
+            newGespeichertes.setHiobstoken("");
+            newGespeichertes.setMeinentoken(meintoken);
+            newGespeichertes.setMessagetoken(gespeichertesMsgToken);
+            newGespeichertes.setRole("Privatsammlungen");
+
+            Friends saveGespeichertes = friendsService.freundSave(newGespeichertes);
+
                 if (saveUser != null) {
 
-                    // Neuer User angelegt, zurück an HiobsClient/success.html
+                    // Neuer User angelegt, zurück an HiobsClient/MailLoginController Zeile: 156
                     return ResponseEntity.status(HttpStatus.OK).body(saveUser);
 
                 } else {
@@ -203,7 +263,7 @@ public class ApiLoginController {
         Exception exception = new Exception();
         exception.setCount(1);
         exception.setDatum(myUtilities.deDatum());
-        exception.setErrip(myUtilities.getLocalhostIp());
+        exception.setErrip(geoLocation.clientIp());
         exception.setErrcode(code);
         exception.setErrquelle(quelle);
         exception.setErrtext(text);
@@ -212,4 +272,5 @@ public class ApiLoginController {
 
         globaleException.setInternFehler(exception);
     }
+
 }

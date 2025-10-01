@@ -1,6 +1,6 @@
-package HiobsServer.repository;
+package HiobsServer.primary.repository;
 
-import HiobsServer.model.Exception;
+import HiobsServer.primary.model.Exception;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -45,7 +45,7 @@ public interface ExceptionRepository extends CrudRepository<Exception, Integer> 
      *
      * return: 1
      *
-     * @param neucount
+     * @param neuercount
      * @param ip
      * @return
      */

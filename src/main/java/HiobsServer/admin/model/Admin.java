@@ -1,4 +1,4 @@
-package HiobsServer.model;
+package HiobsServer.admin.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;

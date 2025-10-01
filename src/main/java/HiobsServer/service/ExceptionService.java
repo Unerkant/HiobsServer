@@ -1,7 +1,7 @@
 package HiobsServer.service;
 
-import HiobsServer.model.Exception;
-import HiobsServer.repository.ExceptionRepository;
+import HiobsServer.primary.model.Exception;
+import HiobsServer.primary.repository.ExceptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

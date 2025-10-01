@@ -1,24 +1,27 @@
 package HiobsServer.exception;
 
-import HiobsServer.model.Exception;
+import HiobsServer.primary.model.Exception;
 import HiobsServer.service.ExceptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 
 /**
  * Den 19.11.2024
  */
 
-@Controller
+@Component
 public class GlobaleException {
 
     @Autowired
     private ExceptionService exceptionService;
+    public GlobaleException(ExceptionService exceptionService) {
+        this.exceptionService = exceptionService;
+    }
+
 
     /**
      * ACHTUNG: Alle ankommende Fehler von anderer Server(HiobsClient, HiobsFX, ...)
@@ -35,6 +38,7 @@ public class GlobaleException {
      *             JSONObject object = new JSONObject(except);              // in Json Object umwandeln
      *             // Senden + Response
      *             HttpResponse<String> response = apiService.requestApi(fehlerLink, object.toString());
+     *
      *       GESENDET: wird gesendet als JSONObject:
      *       {"datum":"18-12-2024 21:14:52","errcode":200,"count":0,"errip":"192.168.0.246",
      *       "errtext":"Den Fehler kommt von response -> HiobsClient/MailController/ApiService.requestApi",
@@ -107,5 +111,4 @@ public class GlobaleException {
         }
 
     }
-
 }
