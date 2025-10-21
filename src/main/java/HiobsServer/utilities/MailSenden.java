@@ -37,8 +37,6 @@ public class MailSenden {
      *                  spring boot ->  @Autowired private JavaMailSender mailSender;
      *                  BEISPIEL: -> https://www.baeldung.com/spring-email (3.2 + 4.2)
      *
-     * @param emailParam
-     * @param aktivierungCode
      * @return
      */
     public String sendEmail(String emailParam, String textParam, String subjectParam) {
