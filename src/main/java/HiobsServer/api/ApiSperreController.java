@@ -31,13 +31,13 @@ public class ApiSperreController {
      * @return
      */
     @PostMapping(value = "/sperreDeleteApi")
-    public ResponseEntity<Integer> apiSperre(@RequestBody String token) {
+    public ResponseEntity<String> apiSperre(@RequestBody String token) {
 
-        // SperrZeit aus der spalte 'sperrdatum' löschen
-        Integer result = sperreService.sperreUpdate(null, token);
+        // Sperr Daten aus dem Datenbank Löschen
+        sperreService.sperreAufheben(token);
 
         // response an HiobsClient/SperreController/@DeleteMapping
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body("aufgehoben");
 
     }
 

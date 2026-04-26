@@ -1,9 +1,7 @@
-package HiobsServer.service;
+package HiobsServer.admin.service;
 
 import HiobsServer.admin.model.Admin;
-import HiobsServer.admin.repository.AdminLoginRepository;
 import HiobsServer.admin.repository.AdminRepository;
-import HiobsServer.exception.GlobaleException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,11 +18,12 @@ import java.util.Optional;
 public class AdminService implements UserDetailsService {
 
     @Autowired
-    private AdminRepository adminRepo;
+    private AdminRepository adminRepository;
     @Autowired
     private AdminLoginService adminLoginService;
+
     public AdminService(AdminRepository adminRepo, AdminLoginService adminLoginService) {
-        this.adminRepo = adminRepo;
+        this.adminRepository = adminRepo;
         this.adminLoginService = adminLoginService;
     }
     int versuchCount = 0;
@@ -50,7 +49,9 @@ public class AdminService implements UserDetailsService {
        /* Admin admins = adminRepo.findByUsernameOrEmailOrTelefon(nameOrEmalOrTelefon, nameOrEmalOrTelefon, nameOrEmalOrTelefon)
                 .orElseThrow(() -> new UsernameNotFoundException("User Name, Email oder Telefon existiert nicht"));
         return new AdminDetails(admins);*/
-        Optional<Admin> admins = adminRepo.findByUsernameOrEmailOrTelefon(nameOrEmalOrTelefon, nameOrEmalOrTelefon, nameOrEmalOrTelefon);
+        Optional<Admin> admins = adminRepository.findByUsernameOrEmailOrTelefon(nameOrEmalOrTelefon, nameOrEmalOrTelefon, nameOrEmalOrTelefon);
+
+        System.out.println("Admin Service, User Name: " + admins);
 
         // Anmeldung mit den falschen Namen ins Datenbank speichern, nach 5 versuchen
         if(!admins.stream().iterator().hasNext() && versuchCount > 4) {
@@ -60,6 +61,7 @@ public class AdminService implements UserDetailsService {
         }
         versuchCount = versuchCount + 1;
 
+        //System.out.println("return Admin Service: " + admins.map(Admin::getUsername).orElse("Return, Admin Service"));
         return admins.map(AdminDetails::new).orElseThrow(()->new UsernameNotFoundException("Name, Email oder Telefon existiert nicht"));
     }
 

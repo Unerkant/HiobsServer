@@ -1,276 +1,215 @@
 package HiobsServer.api;
 
-import HiobsServer.exception.GlobaleException;
-import HiobsServer.primary.model.Exception;
-import HiobsServer.primary.model.Usern;
-import HiobsServer.primary.model.Friends;
-import HiobsServer.service.FriendsService;
-import HiobsServer.service.UsernService;
-import HiobsServer.utilities.GeoLocation;
+import HiobsServer.dto.LoginServerDaten;
+import HiobsServer.dto.LoginClientSave;
+import HiobsServer.controller.GlobaleException;
+import HiobsServer.model.Sperre;
+import HiobsServer.model.User;
+import HiobsServer.service.LoginService;
+import HiobsServer.service.SperreService;
+import HiobsServer.service.UserService;
 import HiobsServer.utilities.MailSenden;
 import HiobsServer.utilities.MyUtilities;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Den 24.10.2024
  */
 
-@Controller
+//@Controller
+@RestController
 public class ApiLoginController {
 
     @Autowired
-    private ApiLetzteLoginController apiLetzteLoginController;
+    private UserService userService;
     @Autowired
     private MyUtilities myUtilities;
     @Autowired
-    private GeoLocation geoLocation;
-    @Autowired
     private MailSenden mailSenden;
     @Autowired
-    private UsernService usernService;
-    @Autowired
-    private FriendsService friendsService;
+    private LoginService loginService;
     @Autowired
     private GlobaleException globaleException;
-
-    private int sicherheitsToken    = 0;
+    @Autowired
+    private SperreService sperreService;
 
 
     /**
-     * BENUTZT: HiobsClient/MailController/@PostMapping(value = "/login/mail")
-     * <br><br>
+     * AktivierungCode an diese E-Mail versenden
+     * return: an HiobsClient/MailController →  @PostMapping(value = "/login/mail")
      *
-     *  output: 'versendet', E-Mail ist vesendet
-     *          'nichtversendet', kein E-Mail versand
-     *
-     *  return: statusCode → 400 + 'nosend', fehler beim Versenden
-     *  return: stausCode → 200 + 'gefunden' oder 'nichtgefunden',
-     *
-     * @param mailZugesendet
-     * @return
+     * return sperrZeit, wenn vorhanden ist
+     *      return versendet über den userReturn.setUsermail("nichtversendet");
+     * return: E-Mail, wenn vorhanden ist
+     * return: String 'nichtgefunden', keine E-Mail in Datenbenk vorhanden
+     * return: String 'nichtversendet', kein anmeldeCode versendet
      */
     @PostMapping(value = "/loginMail")
-    public ResponseEntity<String>apiMail(@RequestBody String mailZugesendet) {
+    public ResponseEntity<User> loginmail(@RequestBody User loginObject) {
 
-        /**
-         * AktivierungCode an diese e-mail versenden
-         * return: an HiobsClient/MailController ->  @PostMapping(value = "/login/mail")
-         * return: 'versendet', als versendet
-         * return: 'nichtversendet', zurzeit nicht benutzt
-         */
-        sicherheitsToken = myUtilities.aktivierungsCode();
-        String text = "<p>hier erhalten Sie ihre Messenger Aktivierung Code </p>"
-                +"<b>" + sicherheitsToken + "</b>"
-                +"<p>Bitte beachten Sie, dass dieser Token nur dieser Sitzung g&#252;ltig ist. </p>"
-                +"<p>mit Freundlichen Gr&#252;ßen</p>"
-                +"<p>Ihr HiobsPost Team</p>";
-        String subject = "HiobsPost Sicherheitstoken";
+        // 1. nach User Daten in Datenbank suchen
+        User userReturn = new User();
+        User userDaten = userService.findeUser(loginObject.getUsermail());
+
+        // 2. User Sperre Prüfen, wenn vorhanden: return
+        if (userDaten != null && userDaten.getSperrdatum() != null) {
+
+            // Sperre in Datenbank H2 Speichern, für Globale abruff
+            sperreService.sperreAktivieren(sperreCreated(userDaten));
+
+            userReturn.setSperrdatum(userDaten.getSperrdatum());
+            return ResponseEntity.ok(userReturn);   // return: sperrDatum in Millis (1234567890)
+        }
 
 
-        String output = mailSenden.sendEmail(mailZugesendet, text, subject);
+        // 3. AnmeldeCode holen und versenden an zugesendete E-Mail
+        int aktuelleAnmeldeCode = myUtilities.aktivierungsCode();
+        String output = mailSenden.sendEmail(loginObject.getUsermail(), aktuelleAnmeldeCode);
 
-        System.out.println("Mail: " +mailZugesendet);
-        System.out.println("Zeile: 68, ApiLoginController -> "+ sicherheitsToken );
-
+        // 5. output: versendet/nichtversendet, von utilities/MailSenden
         if (output.equals("versendet")) {
 
-            /**
-             * Sicherungscode erfolgreich versendet
-             * <br><br>
-             * return an HiobsClient/MailController ->  @PostMapping(value = "/login/mail")
-             * return: 200 (statusCode wird erwartet)
-             * Daten in Datenbank suchen, ob User schon registriert ist oder neuer
-             * return: 'gefunden' + 'nichtgefunden', sind erforderlich
-             *
-             * ACHTUNG: kein NULL response, geht auf errors
-             */
-            Usern datenSuchen = usernService.userSuchen(mailZugesendet);
-            String mailSuchen = datenSuchen == null ? "nichtgefunden" : "gefunden";
-            return ResponseEntity.status(HttpStatus.OK).body(mailSuchen);
+            // Record anmelde Daten für loginSave zum vergleichen, in LoginService(MAP) speichern
+            String existsMail = userDaten == null ? "nichtgefunden" : userDaten.getUsermail();
+            LoginServerDaten serverDaten =
+                    new LoginServerDaten(loginObject.getUsermail(), existsMail, aktuelleAnmeldeCode );
+            loginService.save(serverDaten);
+
+            System.out.println("ApiLoginController/loginMail, Zeile:75, mit e-mail versendet:  " + serverDaten.anmeldeCode());
+
+            //return:
+            userReturn.setUsermail(existsMail);
+            return ResponseEntity.ok(userReturn);     //return: nichtgefunden oder E-Mail
+
         } else {
 
-            /**
-             * Sicherheitcode wurde nicht versendet
-             * return: 402 (return nicht erforderlich)
-             */
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("nosend");
+            // Fehler in Globalen Exception speichern, output: nichtversendet
+            loginFehler(output, loginObject.getUsermail());
+
+            //Sicherheit code per E-Mail wurde nicht versendet, return output (Text: 'nichtversendet')
+            userReturn.setUsermail("nichtversendet");
+            return ResponseEntity.ok(userReturn);   // return: nichtversendet
         }
 
     }
 
 
     /**
-     * Daten werden von HiobsClient/MailController/@PostMapping(value = "/login/registrieren") zugesendet
-     * neuDaten: (als Usern)
-     *      mail: bei Registrierung/Einloggen eingegebene E-Mail
-     *      fund: 'gefunden' oder 'nichtgefunden', ob die E-Mail in Datenbank vorhanden ist
-     *      code: sicherheit code, die von E-Mail zugesendet waren
-     *
-     * ZUGESENDETE JSON: Neu Daten: Usern:
-     *                  {  id=0, bild='null', datum='null', email='richterpaul@freenet.de', other='1111',
-     *                  passwort='null', pseudonym='null', role='nichtgefunden', sprache='null',
-     *                  sperrdatum=null, telefon='null', token='null', username='null', uservorname='null'}
-     *
-     * @param neuDaten
-     * @return
+     *  Daten aus den MongoDB, collection=users
+     *  login Save, newUser: Optional[User{id='6952e6d4e1243e7de37a2bb8', username='example',
+     *  usermail='example@example.com', password='default_start_password', roles=[USER], friendIds=[],
+     *  createdAt=2025-12-29T21:38:44.842, active=true, profilePicture='null'}]
      */
     @PostMapping(value = "/loginSave")
-    public ResponseEntity<Usern> apiSave(@RequestBody Usern neuDaten) {
+    public ResponseEntity<?> loginsave(@RequestBody LoginClientSave clientSave) {
 
-        // Daten vorbereiten
-        String mail     = neuDaten.getEmail();
-        String fund     = neuDaten.getRole().trim();
-        int userCode    = Integer.parseInt(neuDaten.getOther().trim());
-        String pseu     = mail.substring(0, mail.length() - mail.length() + 2);
-        String datum    = myUtilities.deDatum();
-        String sprache  = geoLocation.clientCity("countryCode");
-        String meintoken                = myUtilities.IdentifikationToken();
-        String hiobsMsgToken            = myUtilities.messageToken();
-        String gespeichertesMsgToken    = myUtilities.otherToken();
-        Friends newHiobs = new Friends();
-        Friends newGespeichertes = new Friends();
+        try {
+            // 1. Sicherheits-Check, anmelde Code prüfen
+            LoginServerDaten storageDaten = loginService.get(clientSave.userMail());
+            if (storageDaten != null && storageDaten.anmeldeCode() != clientSave.codeVonMail()) {
 
-        // User-Daten von Datenbank holen, wenn vorhanden sind?
-        Usern newUser = new Usern();
-        Usern altUser = usernService.userSuchen(mail);
+                return ResponseEntity.ok("falschecode");
+            }
 
+            // 2. User nach E-Mail in Datenbank suchen
+            User existingUser = userService.findeUser(clientSave.userMail());
+            User userToReturn = null, userCreated;
+            if (existingUser != null) {
+                //System.out.println("alt User: " + existingUser);
+                userToReturn = existingUser;
+            } else {
 
+                // Neuer User anlegen
+                userCreated = createNewUser(clientSave.userMail());
+                userToReturn = userService.userSave(userCreated);
+            }
 
-        /**
-         * Falsche Code eingegeben,
-         * <br><br>
-         * return an HiobsClient/MailController/@PostMapping(value = "/login/anmelden")
-         * nur 3 Parameter zurückgesendet
-         */
-        if (sicherheitsToken != userCode) {
-            newUser.setEmail(mail);
-            newUser.setOther("falschecode");
-            newUser.setPseudonym(pseu);
-            newUser.setRole(fund);
-            newUser.setToken(meintoken);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(newUser);
+            // Erfolg: Wir senden das komplette User-Objekt zurück
+            return ResponseEntity.status(HttpStatus.OK).body(userToReturn);
+
+        } catch (Exception e) {
+            // Falls die MongoDB nicht erreichbar ist oder ein anderer Fehler auftritt
+            loginFehler("noSave", e.getMessage());
+            return ResponseEntity.ok("noSave");
         }
-
-
-
-        /**
-         * Neuer User Registrieren oder alte User-Daten abrufen
-         */
-        if (altUser != null) {
-
-            //User vorhanden, nur Daten abrufen
-            newUser = usernService.userSuchen(mail);
-            return ResponseEntity.status(HttpStatus.OK).body(newUser);
-
-        } else {
-
-            /**
-             * User nicht vorhanden, neue anlegen
-             *
-             * ACHTUNG: bei neu Registrierung werde gleich message token für hiobs + gespeichertes angelegt
-             * die 2 chats werden in Datenbank als Freunde angelegt mit engine message token
-             * der speicherort von meinen Freunden: secondary/model/Friends
-             *
-             * BEMERKUNG: die 2 chats, Hiobs Post & Gespeichertes sind als bestandteil voll integriert
-             * und können nicht gelöscht werden
-             */
-            newUser.setBild("");
-            newUser.setDatum(datum);
-            newUser.setEmail(mail);
-            newUser.setOther("");
-            newUser.setPasswort("");
-            newUser.setPseudonym(pseu);
-            newUser.setRole("");
-            newUser.setSprache(sprache);
-            newUser.setTelefon("");
-            newUser.setToken(meintoken);
-            newUser.setUsername("");
-            newUser.setUservorname("");
-
-            Usern saveUser = usernService.userSave(newUser);
-
-            // Hiobs Post als Freund anlegen
-            newHiobs.setDatum(datum);
-            newHiobs.setFriendsbild("hiobspost");
-            newHiobs.setFriendsmail("");
-            newHiobs.setFriendsname("Hiobs");
-            newHiobs.setFriendspseudonym("HP");
-            newHiobs.setFriendstelefon("");
-            newHiobs.setFriendstoken("");
-            newHiobs.setFriendsvorname("Post");
-            newHiobs.setGespeichertestoken("");
-            newHiobs.setHiobstoken("");
-            newHiobs.setMeinentoken(meintoken);
-            newHiobs.setMessagetoken(hiobsMsgToken);
-            newHiobs.setRole("Servicemeldungen");
-
-            Friends saveHiobs = friendsService.freundSave(newHiobs);
-
-            // Gespeichertes als Freund anlegen
-            newGespeichertes.setDatum(datum);
-            newGespeichertes.setFriendsbild("gespeichertes");
-            newGespeichertes.setFriendsmail("");
-            newGespeichertes.setFriendsname("Gespeichertes");
-            newGespeichertes.setFriendspseudonym("GS");
-            newGespeichertes.setFriendstelefon("");
-            newGespeichertes.setFriendstoken("");
-            newGespeichertes.setFriendsvorname("");
-            newGespeichertes.setGespeichertestoken("");
-            newGespeichertes.setHiobstoken("");
-            newGespeichertes.setMeinentoken(meintoken);
-            newGespeichertes.setMessagetoken(gespeichertesMsgToken);
-            newGespeichertes.setRole("Privatsammlungen");
-
-            Friends saveGespeichertes = friendsService.freundSave(newGespeichertes);
-
-                if (saveUser != null) {
-
-                    // Neuer User angelegt, zurück an HiobsClient/MailLoginController Zeile: 156
-                    return ResponseEntity.status(HttpStatus.OK).body(saveUser);
-
-                } else {
-
-                    // fehler melden
-                    int fehlerCode = 1004;
-                    String fehlerQuelle = "HiobsServer/ApiLoginController/ @PostMapping(value = \"/loginSave\")";
-                    String fehlerText   = "Neuer User speicherung in Datenbank fehlgeschlagen";
-                    fehlerMelden(fehlerCode, fehlerQuelle, fehlerText);
-
-                    // Daten sind nicht gespeichert
-                    newUser.setEmail("save@fehler.com");
-                    newUser.setOther("nosave");
-                    newUser.setRole(fund);
-                    return ResponseEntity.status(HttpStatus.OK).body(newUser);
-                }
-        }
-
     }
 
 
     /**
-     * Fehler in globalen Datenbank speichern
+     * new User Created
      *
-     * BESCHREIBUNG: den Fehler wird an GlobaleException gesendet und da weiter verarbeiten
-     * PARAMETER:  Exception-Array (statusCode erforderlich)
+     * @param email
+     * @return
      */
-    public void fehlerMelden(int code, String quelle, String text) {
+    private User createNewUser(String email) {
 
-        Exception exception = new Exception();
-        exception.setCount(1);
-        exception.setDatum(myUtilities.deDatum());
-        exception.setErrip(geoLocation.clientIp());
-        exception.setErrcode(code);
-        exception.setErrquelle(quelle);
-        exception.setErrtext(text);
-        exception.setOther("");
-        exception.setRole("");
+        User newUser = new User();
+        newUser.setDatum(Instant.now());
+        newUser.setUsermail(email);
+        newUser.setPseudonym(email.substring(0, 2).toUpperCase());
+        newUser.setPassword("default_start_password");
+        newUser.getRoles().add("USER");
 
-        globaleException.setInternFehler(exception);
+        // Wir fügen die Standard-Kanäle direkt zur Liste hinzu
+        // "system_hiobs" = Der globale News-Kanal
+        // "self_storage" = Die persönliche Cloud
+        newUser.setFriendIds(new ArrayList<>(List.of("system_hiobs", "self_storage")));
+
+        return newUser;
+    }
+
+
+
+    /**
+     * Sperre Created für Datenbank eintrag
+     * @param user
+     * @return
+     */
+    private Sperre sperreCreated(User user) {
+        Sperre sperre = new Sperre();
+        sperre.setSperrdatum(user.getSperrdatum());
+        sperre.setToken(user.getServerId());
+
+        return sperre;
+    }
+
+
+
+    /**
+     * hier werden die Fehler von diese Login an GlobaleException gesendet
+     */
+    public void loginFehler(String aktion, String param) {
+
+        int fehlersCode         = 0;
+        String fehlersQuelle    = "";
+        String fehlersText      = "";
+
+        switch (aktion) {
+            case "nichtversendet":      fehlersCode     = 405;
+                                        fehlersQuelle   = "HiobsServer/ApiLoginControlle/@PostMapping" +
+                                                                    "(value = \"/loginMail\")";
+                                        fehlersText     = "E-Mail mit anmelde Code an ["+ param +"] nicht " +
+                                                                    "verschickt, utilities/MailSenden/SendEmail  ";
+                                        break;
+            case "noSave":              fehlersCode     = 133;  //MongoDb-> Command not Found
+                                        fehlersQuelle   = "HiobsServer/ApiLoginController/loginSave";
+                                        fehlersText     = "Es ist der Exception Fehelr: " + param;
+                                        break;
+            default: break;
+        }
+
+        // Fehler ins Datenbank speichern HiobsServer H2 exception
+        globaleException.exceptionsMelden(fehlersCode, fehlersQuelle, fehlersText);
     }
 
 }

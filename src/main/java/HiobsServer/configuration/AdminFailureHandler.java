@@ -1,6 +1,5 @@
 package HiobsServer.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +10,7 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -33,7 +33,7 @@ import java.util.Map;
  *          Download ausgelöst statt die error seite anzeigen
  *     3. Chrome Browser: bei falschen Namen angaben hatte die error seite angezeigt mit den array
  *          {"exception":"Ungültige Anmeldedaten","timestamp":1746387670407}
- *     4. habe nicht herausgefunden wie man nach 3 faschen Name angabe die error seite soll anzeigen,
+ *     4. habe nicht herausgefunden wie man nach 3 falschen Name angabe die error seite soll anzeigen,
  *        bei Chrome den 1 versuch mit falschen Namen, werde die error seite angezeigt,
  *        bei Safari nach 1 versuch hatte die download ausgelöst
  */

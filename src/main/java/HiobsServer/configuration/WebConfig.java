@@ -17,10 +17,10 @@ public class WebConfig {
     }
 
 
-    public final String FILE_CSS                = "/static/css/style.css";
-    public final String FILE_HTTP               = "http://localhost:8080/";
-    //public final String FILE_HTTP             = "http://194.164.63.85:8080/";
-    public final String FILE_URL                = "???";
-    public final String FILE_MYSQL              = "http://localhost:8889/";     /* mysql */
-    /* Bild Adresse BEI BOTE:  http://localhost:8080/profilbild/03052022103644.png */
+    //public final String FILE_CSS                = "/static/css/style.css";
+    //public final String FILE_HTTP               = "http://localhost:8080/";
+    //public final String FILE_HTTP               = "http://82.165.219.158:8080/";
+    //public final String FILE_URL                = "https://hiobspost.de";
+    //public final String FILE_MYSQL              = "http://localhost:8889/";     /* mysql */
+    /* Bild Adresse BEI BOTE:  http://82.165.219.158:8080/profilbild/hiobspost.png */
 }

@@ -1,4 +1,4 @@
-package HiobsServer.service;
+package HiobsServer.admin.service;
 
 import HiobsServer.admin.model.Admin;
 import org.springframework.security.core.GrantedAuthority;

@@ -39,7 +39,14 @@ public class MailSenden {
      *
      * @return
      */
-    public String sendEmail(String emailParam, String textParam, String subjectParam) {
+    public String sendEmail(String emailParam, int anmeldeCode) {
+
+        String textParam = "<p>hier erhalten Sie ihre Messenger Anmelde Code </p>"
+                +"<b>" + anmeldeCode + "</b>"
+                +"<p>Bitte beachten Sie, dass dieser Token nur dieser Sitzung g&#252;ltig ist. </p>"
+                +"<p>mit Freundlichen Gr&#252;ßen</p>"
+                +"<p>Ihr Hiobs Post Team</p>";
+        String subjectParam = "Hiobs Post: aktuelle Anmelde Code";
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper;
@@ -49,11 +56,11 @@ public class MailSenden {
             helper.setTo(emailParam);
             helper.setText( textParam, true);
             helper.setSubject(subjectParam);
-            mailSender.send(mimeMessage);
+            //mailSender.send(mimeMessage);
 
             return "versendet";
         } catch (MessagingException ex) {
-            //return "Error, keine E-Mail sendung";
+            //System.err.println("Fehler beim Senden der Mail");
             return "nichtversendet";
         }
     }

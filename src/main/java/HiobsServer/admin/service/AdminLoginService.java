@@ -1,4 +1,4 @@
-package HiobsServer.service;
+package HiobsServer.admin.service;
 
 import HiobsServer.admin.model.AdminLogin;
 import HiobsServer.admin.repository.AdminLoginRepository;
@@ -14,13 +14,15 @@ import java.util.Date;
 
 @Service
 public class AdminLoginService {
+
     @Autowired
     private GeoLocation geoLocation;
     @Autowired
     private AdminLoginRepository adminLoginRepository;
-    public AdminLoginService(GeoLocation geoLocation, AdminLoginRepository adminLoginRepository) {
+
+    public AdminLoginService(GeoLocation geoLocation, AdminLoginRepository adminLoginRepo) {
         this.geoLocation = geoLocation;
-        this.adminLoginRepository = adminLoginRepository;
+        this.adminLoginRepository = adminLoginRepo;
     }
 
     /**
@@ -74,7 +76,8 @@ public class AdminLoginService {
         switch (fehlerCode) {
             case "eingeloggt":      System.out.println("Admin Login Service, eingeloggt: " + inputValue);
                                     break;
-            case "falschename":     adminLoginRepository.save(AdminLog);
+            case "falschename":     //adminLoginRepository.save(AdminLog);
+                                    adminLoginRepository.save(AdminLog);
                                     System.out.println("Admin Login Service, falsche Name: " + inputValue);
                                     break;
             default:   System.out.println("Default: " + inputValue);

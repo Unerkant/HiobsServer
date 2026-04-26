@@ -1,7 +1,7 @@
 package HiobsServer.service;
 
-import HiobsServer.primary.model.Letztelogin;
-import HiobsServer.primary.repository.LetzteloginRepository;
+import HiobsServer.model.Letztelogin;
+import HiobsServer.repository.LetzteloginRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,6 @@ public class LetzteloginService {
 
     @Autowired
     private final LetzteloginRepository letzteloginRepo;
-
     public LetzteloginService(LetzteloginRepository letzteloginRepo) {
         this.letzteloginRepo = letzteloginRepo;
     }
@@ -35,6 +34,6 @@ public class LetzteloginService {
      */
     public Letztelogin allEinloggen(String token) {
 
-        return letzteloginRepo.findByToken(token);
+        return letzteloginRepo.findByUsertoken(token);
     }
 }

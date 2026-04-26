@@ -2,11 +2,8 @@ package HiobsServer.utilities;
 
 import org.springframework.stereotype.Component;
 
-import java.net.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -18,15 +15,15 @@ public class MyUtilities {
 
 
     /**
-     *   aktuelle datum in DE-Format
-     *   ============================================================
-     *   1. Deutsches Format, für die Allgemeine anzeige
+     * aktuelle datum in DE-Format
+     * ============================================================
+     * 1. Deutsches Format, für die Allgemeine anzeige
      *
      */
     public String deDatum(){
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        Date de = new Date();
-        return format.format(de);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+        return formatter.format(Instant.now());
     }
 
 
@@ -38,9 +35,9 @@ public class MyUtilities {
      * @return
      */
     public String usDatum(){
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date us = new Date();
-        return format.format(us);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+        return formatter.format(Instant.now());
     }
 
 
@@ -49,10 +46,10 @@ public class MyUtilities {
      * ==============================================================
      * @return
      */
-    public String jahrTag() {
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        Date de = new Date();
-        return format.format(de);
+    public String tagDatum() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                .withZone(ZoneId.systemDefault());
+        return formatter.format(Instant.now());
     }
 
 
@@ -61,53 +58,65 @@ public class MyUtilities {
      * ==============================================================
      * @return
      */
-    public String tagZeit() {
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-        Date de = new Date();
-        return format.format(de);
+    public String zeitDatum() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+        return formatter.format(Instant.now());
     }
 
 
     /**
-     * Benutzt: nur zur Registrierung
+     * Benutzt: nur zur Registrierung, ApiLoginController
      * ==============================================================
-     * IdentifikationToken ist einen 14-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *  *Deutsche format: Tag + Monat + Jahr + Stunden + Minuten + Sekunden
+     * IdentifikationToken ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *  *format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden + 1
      * @return
      */
-    public String IdentifikationToken(){
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyyHHmmss");
-        Date token = new Date();
-        return format.format(token);
+    public String userToken(){
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+1);
+        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
     }
 
 
     /**
-     * Benutzt: nur für Message Token
+     * Benutzt: nur für Message Token, bei neuer Freunde anlegen
      * ==============================================================
-     * messageToken ist einen 14-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *   *USA format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden
+     * messageToken ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *   *format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden + 2
      * @return
      */
     public String messageToken() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        Date token = new Date();
-        return format.format(token);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+2);
+        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
+    }
+
+
+    /**
+     * Benutzt: nur für Hiobs Post Token
+     * ==============================================================
+     *  gespeichertes Token ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *   *format: Jahr + Monat + Tag + Stunden + Minute + Sekunde + 3
+     *
+     * @return
+     */
+    public String msgHiobsToken(){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+3);
+        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
     }
 
 
     /**
      * Benutzt: nur für Gespeichertes Token
      * ==============================================================
-     *  gespeichertes Token ist einen 12-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *   *USA format: Jahr + Monat + Tag + Stunden + Minute + Sekunde(einstellig)
+     *  gespeichertes Token ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *   *format: Jahr + Monat + Tag + Stunden + Minute + Sekunde + 4
      *
      * @return
      */
-    public String otherToken(){
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-        Date tag = new Date();
-        return format.format(tag);
+    public String msgGespeichertesToken(){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+4);
+        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
     }
 
 
@@ -143,23 +152,29 @@ public class MyUtilities {
      *  @parameter
      *      1. zugesendet:  dd.MM.yyyy HH:mm:ss
      *      2. return:      1735678800000
+     *      <code>
+     *          //String sperrData = "16.01.2026 18:40:00";
+     *         //String datum = String.valueOf(myUtilities.getMillis(sperrData));
+     *         // oder model.addAttribute("millis", myUtilities.getMillis("26.01.2026 21:22:22"));
+     *      </code>
+     *
+     *      Tipp für die Praxis: Wenn du die Millisekunden für einen Vergleich (z.B. "Ist die Sperre abgelaufen?")
+     *      nutzt, kannst du in Java 2026 auch direkt Objekte vergleichen, was viel lesbarer ist:
+     *      if (dateTime.isBefore(LocalDateTime.now())) { ... }
      *
      * @return
      * Benutzt: soll von Admin benutzt werden(noch nicht)
      */
-    public Long getMillis (String sperrDatum) {
+    public Long getMillis(String sperrDatum) {
+        // 1. Definition des Formats
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-        //String sperrDatum = "31.12.2024 22:00:00";
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        Date date = null;
-        try {
-            date = sdf.parse(sperrDatum);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        // 2. Parsen in ein LocalDateTime (modernes Java Objekt)
+        LocalDateTime dateTime = LocalDateTime.parse(sperrDatum, formatter);
 
-        long millis = date.getTime();
-        return millis;
+        // 3. Umwandlung in Millisekunden (Epochen-Zeit)
+        // .atZone(ZoneId.systemDefault()) fügt die lokale Zeitzone hinzu
+        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
 }

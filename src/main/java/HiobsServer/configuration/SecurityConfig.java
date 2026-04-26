@@ -3,9 +3,9 @@ package HiobsServer.configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -25,19 +25,38 @@ public class SecurityConfig {
             "/resources/**"
     };
 
+    private static final String[] API_WHITELIST = {
+            "/exceptionen/**",
+            "/h2-console/**",
+            "/loginMail",
+            "/loginSave",
+            "/letzteLogin",
+            "/letzteLoginSave",
+            "/sperreDeleteApi",
+            "/allFriends/all",
+            "/oneFriends/{recipientId}",
+            "/historyMessages/**",
+            "/friends/add"
+    };
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                //.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                //.csrf(AbstractHttpConfigurer::disable)
+                //.httpBasic(Customizer.withDefaults())
+                //.csrf(csrf -> csrf.disable())
+                .csrf(Customizer.withDefaults())
+                .csrf(csrf -> csrf.ignoringRequestMatchers(API_WHITELIST))
                 .headers(headers -> headers.frameOptions(frameoption -> frameoption.disable()))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .requestMatchers(HttpMethod.POST, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/register/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/**").permitAll()
                         .requestMatchers("/developer/**").hasAnyRole("DEVELOPER","ADMIN")
                         .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
                         .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "ADMIN")
@@ -48,7 +67,7 @@ public class SecurityConfig {
                 .formLogin( form -> form
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/default", true)   /* extra default class */
-                        //.failureHandler(authenticationFailureHandler())                /* falsch einloggen Daten */
+                        .failureHandler(authenticationFailureHandler())                /* falsch einloggen Daten */
                         .failureUrl("/error")
                         .permitAll()
                 )
@@ -56,6 +75,7 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
                         .permitAll()
                 );
         return http.build();

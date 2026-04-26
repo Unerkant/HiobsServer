@@ -16,7 +16,7 @@ public class SocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config){
-        config.enableSimpleBroker("/messages");
+        config.enableSimpleBroker("/messages","/topic");
         config.setApplicationDestinationPrefixes("/app");
         //System.out.println("Web Socket Broker Zeile: 18  / " + config);
     }

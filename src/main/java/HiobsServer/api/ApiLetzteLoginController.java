@@ -1,19 +1,20 @@
 package HiobsServer.api;
 
-import HiobsServer.primary.model.Letztelogin;
+import HiobsServer.model.Letztelogin;
 import HiobsServer.service.LetzteloginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Den 5.04.2025
  */
 
-@Controller
+//@Controller
+@RestController
 public class ApiLetzteLoginController {
 
     @Autowired
@@ -52,7 +53,7 @@ public class ApiLetzteLoginController {
      * @param loginDaten
      */
     @PostMapping(path = "/letzteLoginSave")
-    public ResponseEntity<Long> letzteLoginSave(@RequestBody Letztelogin loginDaten) {
+    public ResponseEntity<String> letzteLoginSave(@RequestBody Letztelogin loginDaten) {
 
         Letztelogin responseLogin = letzteloginService.loginSave(loginDaten);
         // symbolische response als ID, nicht erforderlich

@@ -1,13 +1,11 @@
 package HiobsServer.controller;
 
-import HiobsServer.admin.repository.AdminRepository;
 import HiobsServer.configuration.SocketEventListener;
+import HiobsServer.utilities.MyUtilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.awt.*;
 
 /**
  * Den 15.09.2024
@@ -19,7 +17,7 @@ public class AdminController {
     @Autowired
     private SocketEventListener eventListener;
     @Autowired
-    private AdminRepository adminRepository;
+    private MyUtilities myUtilities;
 
 
     @GetMapping(value = { "/", "/admin", "/admin{path}" })
@@ -28,10 +26,11 @@ public class AdminController {
         //System.out.println("Admin Controller, Path: " + path);
         model.addAttribute("clientOnline", "Online: " + eventListener.getClientCount());
 
+        model.addAttribute("mytoken", myUtilities.userToken());
+        model.addAttribute("msgtoken", myUtilities.messageToken());
+        model.addAttribute("hiobstoken", myUtilities.msgHiobsToken());
+        model.addAttribute("millis", myUtilities.msgGespeichertesToken());
 
-        //adminRepository.findAll();
-        //usern = usernService.findeAlle();
-        //System.out.println("Admin Controller: " + adminRepository.findAll());
         System.out.println("Admin Controller: ");
 
         return "admin";
