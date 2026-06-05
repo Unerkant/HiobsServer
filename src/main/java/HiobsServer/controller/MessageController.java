@@ -20,10 +20,16 @@ public class MessageController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private MessageService messageService;
-    
+
+
     /**
      *  Message entgegen nehmen und weiter leiten, HiobsClient/stompConnection.js
-     * @param message
+     *
+     *  zugesendet von HiobsClient/msgSenden.js → stompClient.send("/app/messages", {}, JSON.stringify(sendData));
+     *  Message received: Message{id='null', senderId='69962ec8360a87668ab19142',
+     *  recipientId='6989c6273217d0d4651d7e42', content='Sprachnachricht',
+     *  timestamp=2026-05-20T17:54:25.183Z, type='AUDIO', fileUrl='/uploads/audio/audio_1779299665121.mp4',
+     *  fileName='audio_1779299665121.mp4', base64Data='null', gelesen=false}
      */
     @MessageMapping("/messages")
     public void messageReceiving(Message message) {
@@ -40,15 +46,15 @@ public class MessageController {
         }
     }
 
+
     /**
      * User Online (grünes Licht an ProfilBild oder Pseudonym), hiobsClient/stompConnection.js
-     * @param status
      */
     @MessageMapping("/user.online")
     public void userOnlineHandler(UserStatus status, SimpMessageHeaderAccessor headerAccessor) {
 
         // 1. Die UserId in die Session-Attribute schreiben
-        // Das ist der "Stempel" im Logbuch dieser speziellen Verbindung
+        // das ist der "Stempel" im Logbuch dieser speziellen Verbindung
         if (headerAccessor.getSessionAttributes() != null) {
             headerAccessor.getSessionAttributes().put("userId", status.getUserId());
         }
@@ -62,9 +68,9 @@ public class MessageController {
         messagingTemplate.convertAndSend("/topic/user-status", status);
     }
 
+
     /**
      * User Offline (grünes Licht ausblenden), hiobsClient/stompConnection.js
-     * @param status
      */
     @MessageMapping("/user.offline")
     public void userOfflineHandler(UserStatus status) {

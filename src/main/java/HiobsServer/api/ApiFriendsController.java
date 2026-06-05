@@ -4,6 +4,10 @@ import HiobsServer.model.User;
 import HiobsServer.repository.UserRepository;
 import HiobsServer.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +28,15 @@ public class ApiFriendsController {
     private UserService userService; // Dieser Service greift auf das UserRepository zu
     @Autowired
     private UserRepository userRepository;
+    private final MongoTemplate mongoTemplate;
+    public ApiFriendsController(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
 
     /**
      * Lädt alle Profile der Freunde für einen bestimmten User.
-     * Aufruf: GET /allFriends/all?myId=...
+     * Aufruf: GET /allFriends/all?myId=
      */
     @PostMapping(path = "/allFriends/all")
     public ResponseEntity<List<User>> allfriends(@RequestParam("myId") String myId) {
@@ -40,10 +49,11 @@ public class ApiFriendsController {
         }
 
         // 2. Wir laden alle User-Profile, deren IDs in meiner 'friendIds' Liste stehen
-        // In MongoDB enthält 'friendIds' die Strings der Partner
+        // in MongoDB enthält 'friendIds' die Strings der Partner
         List<User> friends = userService.getUsersByIds(me.getFriendIds());
         return ResponseEntity.ok(friends);
     }
+
 
     /**
      * Lädt ein einzelnes User-Profil (für den Chat-Header).
@@ -60,6 +70,7 @@ public class ApiFriendsController {
         User user = userService.getUserById(recipientId);
         return (user != null) ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
+
 
     /**
      * Freunde Einladen
@@ -94,5 +105,23 @@ public class ApiFriendsController {
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User nicht gefunden");
+    }
+
+
+    /**
+     * Freund & mich von friendIds(array) entfernen, Chat Löschen
+     */
+    @PostMapping("/friends/friendRemove")
+    public ResponseEntity<String> removeFriends(@RequestParam("me") String myId,
+                                                @RequestParam("friend") String friendId) {
+        // 1. Freund aus meinem Array entfernen
+        Update updateMe = new Update().pull("friendIds", friendId);
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(myId)), updateMe, User.class);
+
+        // 2. Mich aus dem Array des Freundes entfernen
+        Update updateFriend = new Update().pull("friendIds", myId);
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(friendId)), updateFriend, User.class);
+
+        return ResponseEntity.ok("Freundschaft beendet");
     }
 }

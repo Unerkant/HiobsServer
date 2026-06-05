@@ -24,11 +24,7 @@ public class UserService {
     }
 
     /**
-     * BENUTZT: ApiLoginController
-     * <br><br>
-     *
-     * @param usern
-     * @return
+     * BENUTZT: ApiLoginController Zeile: 134
      */
     public User userSave(User usern) {
 
@@ -37,8 +33,7 @@ public class UserService {
 
     /**
      * User nach E-Mail suchen
-     * @param usermail
-     * @return
+     * BENUTZT: ApiLoginController Zeile: 60 & 125
      */
     public User findeUser(String usermail) {
 
@@ -49,9 +44,7 @@ public class UserService {
     /**
      * BENUTZT: ApiLoginController
      * <br><br>
-     * registrierte user mit diese e-mail suchen
-     * @param name
-     * @return
+     * registrierte user mit diesem E-Mail suchen
      */
     public Optional<User> findUserName(User name) {
 
@@ -60,20 +53,24 @@ public class UserService {
 
 
     /**
-     * BENUTZT: von?
-     * <br><br>
-     * @param roles
-     * @return
+     * BENUTZT: zurzeit nicht
      */
     public List<User> datenSuchen(User roles) {
 
         return userRepository.findByRolesContaining(String.valueOf(roles));
     }
 
+    /**
+     * Benutzt: ApiFriendsController Zeile: 36 & 60
+     */
     public User getUserById(String myId) {
+
         return userRepository.findById(myId).orElse(null);
     }
 
+    /**
+     *  Benutzt: ApiFriendsController Zeile: 44
+     */
     public List<User> getUsersByIds(List<String> friendIds) {
         return userRepository.findAllById(friendIds);
     }

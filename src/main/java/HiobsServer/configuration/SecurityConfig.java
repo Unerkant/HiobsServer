@@ -36,7 +36,8 @@ public class SecurityConfig {
             "/allFriends/all",
             "/oneFriends/{recipientId}",
             "/historyMessages/**",
-            "/friends/add"
+            "/userInfo/**",
+            "/friends/**"
     };
 
 
