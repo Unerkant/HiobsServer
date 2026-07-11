@@ -147,9 +147,6 @@ public class ApiLoginController {
 
     /**
      * new User Created
-     *
-     * @param email
-     * @return
      */
     private User createNewUser(String email) {
 

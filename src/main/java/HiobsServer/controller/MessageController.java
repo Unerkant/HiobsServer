@@ -3,6 +3,7 @@ package HiobsServer.controller;
 import HiobsServer.dto.UserStatus;
 import HiobsServer.model.Message;
 import HiobsServer.service.MessageService;
+import HiobsServer.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -20,10 +21,12 @@ public class MessageController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private UserService userService;
 
 
     /**
-     *  Message entgegen nehmen und weiter leiten, HiobsClient/stompConnection.js
+     *  Message entgegen nehmen, save und weiter leiten, HiobsClient/stompConnection.js
      *
      *  zugesendet von HiobsClient/msgSenden.js → stompClient.send("/app/messages", {}, JSON.stringify(sendData));
      *  Message received: Message{id='null', senderId='69962ec8360a87668ab19142',
@@ -75,12 +78,15 @@ public class MessageController {
     @MessageMapping("/user.offline")
     public void userOfflineHandler(UserStatus status) {
 
-        // Wir erzwingen den Status auf 'false'
+        // 1. Wir erzwingen den Status auf 'false'
         status.setOnline(false);
 
         //System.out.println("⚓️ User geht von Bord: " + status.getUserId());
 
-        // Und ab damit in den Funkkanal, damit alle Augen grau werden
+        // 2. Online Zeit aktualisieren
+        userService.updateLastLogin(status.getUserId());
+
+        // 3. Und ab damit in den Funkkanal, damit alle Augen grau werden
         messagingTemplate.convertAndSend("/topic/user-status", status);
     }
 

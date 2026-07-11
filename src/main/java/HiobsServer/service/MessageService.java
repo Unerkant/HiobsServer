@@ -1,6 +1,7 @@
 package HiobsServer.service;
 
 import HiobsServer.model.Message;
+import HiobsServer.model.User;
 import HiobsServer.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -9,10 +10,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Den 2.02.2026
@@ -24,10 +25,9 @@ public class MessageService {
     @Autowired
     private MessageRepository  messageRepository ;
 
+
     /**
      * Save messages
-     * @param msg
-     * @return
      */
     public Message saveNewMessage(Message msg) {
 
@@ -37,11 +37,27 @@ public class MessageService {
         return messageRepository.save(msg);
     }
 
+    /* ****************** ACHTUNG: NEUE die Datenbank-Abfrage gruppiert ************  */
+
+    // Im MessageService.java
+    public Map<LocalDate, List<Message>> getGroupedChatHistory(String userA, String userB, int page, int size) {
+        // 1. Die Daten abrufen (deine bestehende Repository-Logik)
+        List<Message> history = messageRepository.findHistoryBetweenUsers(userA, userB, PageRequest.of(page, size, Sort.by("timestamp").descending()));
+
+        // 2. Gruppieren (wir drehen die Liste vorher um, damit der älteste Tag oben ist)
+        Collections.reverse(history);
+
+        return history.stream()
+                .collect(Collectors.groupingBy(
+                        msg -> msg.getTimestamp().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        TreeMap::new,
+                        Collectors.toList()
+                ));
+    }
+
+
     /**
      * Messages Laden
-     * @param myId
-     * @param partnerId
-     * @return
      */
     public List<Message> getChatHistory(String myId, String partnerId, int page, int size) {
         //  Wir sortieren IMMER nach Zeitstempel absteigend (neueste zuerst)
@@ -66,11 +82,22 @@ public class MessageService {
         }
     }
 
+
+    /**
+     * Markiert alle messages als gelesen
+     */
+    public void markiereAlsGelesen(String myId, String friendId) {
+        // Suche alle ungelesenen Nachrichten von dem Freund an mich
+        List<Message> unread = messageRepository.findByRecipientIdAndSenderIdAndGelesen(myId, friendId, false);
+        for (Message msg : unread) {
+            msg.setGelesen(true);
+        }
+        messageRepository.saveAll(unread);
+    }
+
+
     /**
      * für HiobsClient/UserInfoController
-     * @param userA
-     * @param userB
-     * @return
      */
     public List<Message> getUserHistory(String userA, String userB) {
         // Wir suchen alle Nachrichten, wo (Sender=A UND Empfänger=B) ODER (Sender=B UND Empfänger=A)
@@ -78,20 +105,18 @@ public class MessageService {
         return messageRepository.findChatHistory(userA, userB);
     }
 
+
     /**
      * ACHTUNG: nur für den Test oder gesamt Messages in MongoDB ermitteln oder count-messages von mir undFreund
-     * @param userA
-     * @param userB
-     * @return
      */
     public List<Message> getHistoryCount(String userA, String userB) {
 
         // DEBUG: Wie viele Nachrichten gibt es überhaupt in der DB?
         long gesamt = messageRepository.count();
-        System.out.println("⚓️ DEBUG: Gesamtzahl Nachrichten in DB: " + gesamt);
+        //System.out.println("⚓️ DEBUG: Gesamtzahl Nachrichten in DB: " + gesamt);
 
         List<Message> history = messageRepository.findChatHistory(userA, userB);
-        System.out.println("⚓️ DEBUG: Gefundene History: " + history.size() + " Einträge");
+        //System.out.println("⚓️ DEBUG: Gefundene History: " + history.size() + " Einträge");
 
         /**
          * ⚓️ DEBUG: Gesamtzahl Nachrichten in DB: 303  (stand: 5.5.2026)
@@ -101,8 +126,54 @@ public class MessageService {
         return history;
     }
 
+    /* ********************** Letzte message holen, für Chat-Freunde anzeige ******************** */
+
+    /**
+     *  Sucht letzte Nachrichten für Freunde ausgabe in HiobsClient
+     *  benutzt: UserService: getUsersByIds(...), Zeile: 92
+     */
+    public void setzeLetzteNachrichten(List<User> userList, String myId) {
+
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "timestamp"));
+
+        for (User freund : userList) {
+            // Sicherstellen, dass wir eine gültige ID haben
+            String targetId = freund.getServerId();
+            if (targetId == null) continue;
+
+
+            // Abfrage für ALLE (Funktioniert auch für 'self_storage' oder 'system_hiobs',
+            // WENN diese IDs in der Message-Tabelle als recipientId/senderId vorkommen)
+            List<Message> messages = messageRepository.findLatestMessageBetweenUsers(myId, targetId, pageable);
+
+            if (!messages.isEmpty()) {
+                Message msg = messages.get(0);
+                freund.setType(msg.getType());
+                freund.setLetzteNachricht(msg.getContent());
+                freund.setDatumLetzteNachricht(msg.getTimestamp());
+
+                if (msg.getRecipientId().equals(myId)) {
+                    freund.setGelesen(msg.isGelesen());
+                } else {
+                    freund.setGelesen(true);
+                }
+            } else {
+                // OPTIONAL: Fallback für leere Chats (z.B. bei System-Kanälen)
+                if (targetId.equals("self_storage")) {
+                    freund.setLetzteNachricht("Noch keine Notizen...");
+                }
+            }
+
+            // NEU: Ungelesene Nachrichten zählen
+            long unreadCount = messageRepository.countByRecipientIdAndSenderIdAndGelesen(myId, freund.getServerId(), false);
+            freund.setUnreadCount(unreadCount); // Feld 'unreadCount' in User.java als @Transient hinzufügen
+        }
+    }
+
 
     /* *********************** Delete Methoden ********************* */
+
+
     /**
      * einzelne/ausgewählte Messages Löschen
      */

@@ -57,11 +57,14 @@ public class SocketEventListener {
      */
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+
         // Spring weiß, welche Session beendet wurde
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        // Hier wird es trickreich: Du musst beim Verbinden (Connect) die UserId
-        // in der Session Attributes speichern, um sie hier wiederzufinden.
+        /**
+         * Hier wird es trickreich: Du musst beim Verbinden (Connect) die UserId
+         * in der Session Attributes speichern, um sie hier wiederzufinden.
+         */
         String userId = (String) headerAccessor.getSessionAttributes().get("userId");
 
         if (userId != null) {

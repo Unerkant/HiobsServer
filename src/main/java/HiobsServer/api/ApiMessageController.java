@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -21,33 +22,71 @@ public class ApiMessageController {
     @Autowired
     private MessageService messageService;
 
+
     /**
      * Liefert den Chat-Verlauf zwischen zwei Usern
      * Aufruf: GET /historyMessages/history?from=...&to=...
      */
     @PostMapping("/historyMessages/history")
-    public ResponseEntity<List<Message>> getChatHistory(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<LocalDate, List<Message>>> getChatHistory(@RequestBody Map<String, Object> payload) {
         String from = (String) payload.get("from");
         String to = (String) payload.get("to");
 
         // Initial-Load: Seite 0, 20 Nachrichten
-        List<Message> history = messageService.getChatHistory(from, to, 0, 20);
+        Map<LocalDate, List<Message>> history = messageService.getGroupedChatHistory(from, to, 0, 20);
 
         return ResponseEntity.ok(history);
+        /*
+         * ACHTUNG: DIESER FORMAT WIRD AN HIOBSCLIENT GESENDET
+         * History: {2026-06-11=[Message{id='6a2b02fa7fd3855c3f5c4a6c', senderId='69962ec8360a87668ab19142',
+         * recipientId='6989c6273217d0d4651d7e42', content='OK, hier ist der Chrome von google!',
+         * timestamp=2026-06-11T18:48:26.422Z, type='TEXT', fileUrl='null',
+         * fileName='null', base64Data='null', gelesen=true}],
+         * 2026-06-14=[Message{id='6a2e7961454d3c638cfbfd9e', senderId='69962ec8360a87668ab19142',
+         * recipientId='6989c6273217d0d4651d7e42', content='Hallo Safari hier ist der Chrome',
+         * timestamp=2026-06-14T09:50:25.834Z, type='TEXT', fileUrl='null', fileName='null',
+         * base64Data='null', gelesen=true}]}
+         */
     }
 
     /**
      * holt die erste 20 messages, dann rest
      */
     @PostMapping("/historyMessages/Paged")
-    public List<Message> getPagedHistory(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<LocalDate, List<Message>>> getPagedHistory(@RequestBody Map<String, Object> payload) {
         String userA = (String) payload.get("userA");
         String userB = (String) payload.get("userB");
         int page = (int) payload.get("page");
         int size = (int) payload.get("size");
 
-        return messageService.getChatHistory(userA, userB, page, size);
+        Map<LocalDate, List<Message>> groupedHistory = messageService.getGroupedChatHistory(userA, userB, page, size);
+
+        return ResponseEntity.ok(groupedHistory);
+        /*
+         * ACHTUNG: DIESER FORMAT WIRD AN HIOBSCLIENT GESENDET
+         * History: {2026-06-11=[Message{id='6a2b02fa7fd3855c3f5c4a6c', senderId='69962ec8360a87668ab19142',
+         * recipientId='6989c6273217d0d4651d7e42', content='OK, hier ist der Chrome von google!',
+         * timestamp=2026-06-11T18:48:26.422Z, type='TEXT', fileUrl='null',
+         * fileName='null', base64Data='null', gelesen=true}],
+         * 2026-06-14=[Message{id='6a2e7961454d3c638cfbfd9e', senderId='69962ec8360a87668ab19142',
+         * recipientId='6989c6273217d0d4651d7e42', content='Hallo Safari hier ist der Chrome',
+         * timestamp=2026-06-14T09:50:25.834Z, type='TEXT', fileUrl='null', fileName='null',
+         * base64Data='null', gelesen=true}]}
+         */
     }
+
+
+    /**
+     *  ungelesene message als gelesen setzen(true)
+     */
+    @PostMapping("/historyMessages/allGelesen")
+    public void getAllGelesenHistory(@RequestBody Map<String, Object> payload) {
+        String userA = (String) payload.get("userA");
+        String userB = (String) payload.get("userB");
+
+        messageService.markiereAlsGelesen(userA, userB);
+    }
+
 
     /**
      *  einzelne/ausgewählte Message Löschen
@@ -74,21 +113,8 @@ public class ApiMessageController {
         List<Message> deletedMessages = messageService.deleteAllHistory(from, to);
 
         // Wir senden die gelöschten Nachrichten zurück,
-        // damit der Client die Dateien aufräumen kann
+        // damit der Client die Dateien(uploads) aufräumen kann
         return ResponseEntity.ok(deletedMessages);
 
-        /**
-         * deletedMessages: [Message{id='6a2177dac727be760ac9d951', senderId='69962ec8360a87668ab19142',
-         * recipientId='self_storage', content='x bxcy yc yc yc', timestamp=2026-06-04T13:04:26.874Z,
-         * type='TEXT', fileUrl='null', fileName='null', base64Data='null', gelesen=false},
-         * Message{id='6a2177ddc727be760ac9d952', senderId='69962ec8360a87668ab19142', recipientId='self_storage',
-         * content='y c yc yc yc yç', timestamp=2026-06-04T13:04:29.123Z, type='TEXT', fileUrl='null',
-         * fileName='null', base64Data='null', gelesen=false}, Message{id='6a2177e6c727be760ac9d953',
-         * senderId='69962ec8360a87668ab19142', recipientId='self_storage', content='',
-         * timestamp=2026-06-04T13:04:38.924Z, type='GALLERY',
-         * fileUrl='[1780578278910_6pg.jpg, 1780578278914_33.jpg, 1780578278914_99.jpg]',
-         * fileName='null', base64Data='null', gelesen=false}]
-         */
     }
-
 }

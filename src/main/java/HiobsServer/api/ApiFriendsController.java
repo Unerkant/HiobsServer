@@ -36,7 +36,9 @@ public class ApiFriendsController {
 
     /**
      * Lädt alle Profile der Freunde für einen bestimmten User.
-     * Aufruf: GET /allFriends/all?myId=
+     * Aufruf: GET: .uri(webConfig.SERVER_HTTP + "allFriends/all?myId=" + myId)
+     * HiobsClient/MsgController/private List<User> getAlleKontakte(String myId)  Zeile: 130
+     * zugesendete Format: myId:6989c6273217d0d4651d7e42
      */
     @PostMapping(path = "/allFriends/all")
     public ResponseEntity<List<User>> allfriends(@RequestParam("myId") String myId) {
@@ -47,10 +49,12 @@ public class ApiFriendsController {
         if (me == null || me.getFriendIds() == null) {
             return ResponseEntity.ok(new ArrayList<>());
         }
+        // me.getFriendIds: [system_hiobs, self_storage, 69eb90ff2f3fb5062116bb95, 6989c6273217d0d4651d7e42]
 
         // 2. Wir laden alle User-Profile, deren IDs in meiner 'friendIds' Liste stehen
         // in MongoDB enthält 'friendIds' die Strings der Partner
-        List<User> friends = userService.getUsersByIds(me.getFriendIds());
+        List<User> friends = userService.getUsersByIds(me.getFriendIds(), myId);
+
         return ResponseEntity.ok(friends);
     }
 
@@ -78,8 +82,6 @@ public class ApiFriendsController {
     @PostMapping("/friends/add")
     public ResponseEntity<String> addFriend(@RequestParam("me") String myId,
                                             @RequestParam("friend") String friendId) {
-
-        //System.out.println("Adding friend(ApiFriendsController -> Zeile: 71) " + friendId + " to " + myId);
 
         // 1. Beide User aus der DB laden
         Optional<User> meOpt = userRepository.findById(myId);
