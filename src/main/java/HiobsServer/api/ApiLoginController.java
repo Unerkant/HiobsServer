@@ -76,7 +76,8 @@ public class ApiLoginController {
         int aktuelleAnmeldeCode = myUtilities.aktivierungsCode();
         String output = mailSenden.sendEmail(loginObject.getUsermail(), aktuelleAnmeldeCode);
 
-        // 5. output: versendet/nichtversendet, von utilities/MailSenden
+
+        // 4. output: versendet/nichtversendet, von utilities/MailSenden
         if (output.equals("versendet")) {
 
             // Record anmelde Daten für loginSave zum vergleichen, in LoginService(MAP) speichern
@@ -85,7 +86,7 @@ public class ApiLoginController {
                     new LoginServerDaten(loginObject.getUsermail(), existsMail, aktuelleAnmeldeCode );
             loginService.save(serverDaten);
 
-            System.out.println("ApiLoginController/loginMail, Zeile:75, mit e-mail versendet:  " + serverDaten.anmeldeCode());
+            System.out.println("ApiLoginController/loginMail, Zeile:77, mit e-mail versendet:  " + serverDaten.anmeldeCode());
 
             //return:
             userReturn.setUsermail(existsMail);
@@ -95,6 +96,8 @@ public class ApiLoginController {
 
             // Fehler in Globalen Exception speichern, output: nichtversendet
             loginFehler(output, loginObject.getUsermail());
+
+            System.out.println("ApiLoginController/loginMail, Zeile:77, e-mail nichtversendet:  " + loginObject.getUsermail());
 
             //Sicherheit code per E-Mail wurde nicht versendet, return output (Text: 'nichtversendet')
             userReturn.setUsermail("nichtversendet");

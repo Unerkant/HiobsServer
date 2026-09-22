@@ -2,8 +2,6 @@ package HiobsServer.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,14 +16,20 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // 1. Öffentlich erreichbare Seiten / Ressourcen (Öffentliches Web-Frontend)
     private static final String[] AUTH_WHITELIST = {
-            "/profilbild/**",
+            "/profil/**",
+            "/profilbild/**",     // NEU: Zum Laden der Profilbilder (<img src="...">)
             "/register/**",
             "/h2-console/**",
-            "/resources/**"
+            "/resources/**",
+            "/css/**",
+            "/js/**",
+            "/images/**"
     };
 
-    private static final String[] API_WHITELIST = {
+    // 2. API-Endpunkte, die KEINE CSRF-Token-Prüfung benötigen (z. B. für HiobsClient REST-Calls)
+    private static final String[] API_CSRF_IGNORE_WHITELIST = {
             "/exceptionen/**",
             "/h2-console/**",
             "/loginMail",
@@ -34,78 +38,67 @@ public class SecurityConfig {
             "/letzteLoginSave",
             "/sperreDeleteApi",
             "/allFriends/all",
-            "/oneFriends/{recipientId}",
+            "/oneFriends/*",
             "/historyMessages/**",
             "/userInfo/**",
-            "/friends/**"
+            "/friends/**",
+            "/channel/**",
+            "/profil/**"     // NEU: Für /profil/upload und /profil/bildDelete
     };
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                //.csrf(AbstractHttpConfigurer::disable)
-                //.httpBasic(Customizer.withDefaults())
-                //.csrf(csrf -> csrf.disable())
-                .csrf(Customizer.withDefaults())
-                .csrf(csrf -> csrf.ignoringRequestMatchers(API_WHITELIST))
-                .headers(headers -> headers.frameOptions(frameoption -> frameoption.disable()))
-                .authorizeHttpRequests((authorize) -> authorize
+                // Saubere CSRF-Konfiguration (ignoriert CSRF nur für API-Aufrufe)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(API_CSRF_IGNORE_WHITELIST)
+                )
+                // H2-Console Frame-Optionen freischalten
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
+                // Authorisierung / Rechtevergabe
+                .authorizeHttpRequests(authorize -> authorize
+                        // Öffentliche URLs erlauben (GET, POST etc.)
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/register/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/**").permitAll()
-                        .requestMatchers("/developer/**").hasAnyRole("DEVELOPER","ADMIN")
+                        .requestMatchers(API_CSRF_IGNORE_WHITELIST).permitAll()
+
+                        // Rollengeschützte Bereiche
+                        .requestMatchers("/developer/**").hasAnyRole("DEVELOPER", "ADMIN")
                         .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
                         .requestMatchers("/statistik/**").hasAnyRole("STATISTIK", "ADMIN")
-                        .requestMatchers("/","/admin/**").hasAnyRole("ADMIN")
-                        .anyRequest()
-                        .authenticated()
+                        .requestMatchers("/", "/admin/**").hasRole("ADMIN")
+
+                        // Alle übrigen Anfragen müssen authentifiziert sein!
+                        .anyRequest().authenticated()
                 )
-                .formLogin( form -> form
+                // Formular-Login für Web-Nutzer
+                .formLogin(form -> form
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/default", true)   /* extra default class */
-                        .failureHandler(authenticationFailureHandler())                /* falsch einloggen Daten */
+                        .defaultSuccessUrl("/default", true)
+                        .failureHandler(authenticationFailureHandler())
                         .failureUrl("/error")
                         .permitAll()
                 )
-                .logout( logout -> logout
+                // Logout-Steuerung
+                .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true)
                         .permitAll()
                 );
-        return http.build();
 
+        return http.build();
     }
 
-    /**
-     * ACHTUNG: am 5.05.2025 ausgesetzt + configuration/AdminAuthenticationFailureHandler() + hier Zeile: 52
-     *
-     * Falsche einloggen Daten
-     *
-     * QUELLE: configuration: AdminAuthenticationFailureHandler
-     * @return
-     */
     @Bean
     public AuthenticationFailureHandler authenticationFailureHandler() {
         return new AdminFailureHandler();
     }
 
-    /**
-     * password codierung
-     * https://bcrypt-generator.com/
-     *
-     * @return
-     */
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
-
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }

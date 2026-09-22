@@ -49,7 +49,7 @@ public class ApiFriendsController {
         if (me == null || me.getFriendIds() == null) {
             return ResponseEntity.ok(new ArrayList<>());
         }
-        // me.getFriendIds: [system_hiobs, self_storage, 69eb90ff2f3fb5062116bb95, 6989c6273217d0d4651d7e42]
+        // me.getFriendIds: [system_hiobs, self_storage, 69962ec8360a87668ab19142, 20260816180118]
 
         // 2. Wir laden alle User-Profile, deren IDs in meiner 'friendIds' Liste stehen
         // in MongoDB enthält 'friendIds' die Strings der Partner

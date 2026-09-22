@@ -27,9 +27,7 @@ public class AdminController {
         model.addAttribute("clientOnline", "Online: " + eventListener.getClientCount());
 
         model.addAttribute("mytoken", myUtilities.userToken());
-        model.addAttribute("msgtoken", myUtilities.messageToken());
-        model.addAttribute("hiobstoken", myUtilities.msgHiobsToken());
-        model.addAttribute("millis", myUtilities.msgGespeichertesToken());
+        model.addAttribute("millis", myUtilities.getMillis("16.01.2026 18:40:00"));
 
         System.out.println("Admin Controller: ");
 

@@ -33,7 +33,7 @@ public class ApiSperreController {
     @PostMapping(value = "/sperreDeleteApi")
     public ResponseEntity<String> apiSperre(@RequestBody String token) {
 
-        // Sperr Daten aus dem Datenbank Löschen
+        // Sperr Daten aus dem Datenbanklöschen
         sperreService.sperreAufheben(token);
 
         // response an HiobsClient/SperreController/@DeleteMapping

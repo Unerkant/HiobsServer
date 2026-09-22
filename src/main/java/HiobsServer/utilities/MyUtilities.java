@@ -66,15 +66,15 @@ public class MyUtilities {
 
 
     /**
-     * Benutzt: nur zur Registrierung, ApiLoginController
+     * Benutzt: nur zum Channel Message
      * ==============================================================
-     * IdentifikationToken ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *  *format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden + 1
+     * IdentifikationToken ist einen 14-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
+     *  *format USA: Jahr + Monat + Tag + Stunden + Minuten + Sekunden
      * @return
      */
-    public String userToken(){
+    public String channelToken(){
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
     }
 
@@ -83,41 +83,15 @@ public class MyUtilities {
      * Benutzt: nur für Message Token, bei neuer Freunde anlegen
      * ==============================================================
      * messageToken ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *   *format: Jahr + Monat + Tag + Stunden + Minuten + Sekunden + 2
+     *   *format USA: Jahr + Monat + Tag + Stunden + Minuten + Sekunden + 1
      * @return
      */
-    public String messageToken() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+2);
+    public String userToken() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+1);
         return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
     }
 
 
-    /**
-     * Benutzt: nur für Hiobs Post Token
-     * ==============================================================
-     *  gespeichertes Token ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *   *format: Jahr + Monat + Tag + Stunden + Minute + Sekunde + 3
-     *
-     * @return
-     */
-    public String msgHiobsToken(){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+3);
-        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
-    }
-
-
-    /**
-     * Benutzt: nur für Gespeichertes Token
-     * ==============================================================
-     *  gespeichertes Token ist einen 15-stelliges eindeutiges nummer aus Datum zusammen gestellt ohne punkten,
-     *   *format: Jahr + Monat + Tag + Stunden + Minute + Sekunde + 4
-     *
-     * @return
-     */
-    public String msgGespeichertesToken(){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss"+4);
-        return LocalDateTime.now().atZone(ZoneId.systemDefault()).format(formatter);
-    }
 
 
     /**
